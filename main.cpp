@@ -9,6 +9,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include "LightSources.h"
 #include "Camera.h"
 #include "Color.h"
 #include "Light.h"
@@ -17,6 +18,8 @@
 #include "Plane.h"
 #include "Ray.h"
 #include "Object.h"
+
+
 
 #include "windows.h"
 #define _CRTDBG_MAP_ALLOC //to get more details
@@ -81,6 +84,23 @@ int findClosestObjIndex(std::vector<double>& intersections) {
 	}
 }
 
+Color getColorAt(glm::vec3 intersection,
+	std::vector<LightSources*>& sources, std::vector<Object*> objects,
+	int closestIdx, float ambientLightConst) {
+
+	Color objectColor = objects[closestIdx]->getColor();
+	glm::vec3 objectNormal = objects[closestIdx]->getNormal();
+	for (int k = 0; k < sources.size(); k++) {
+		glm::vec3 lightPos = sources[k]->getLightPos();
+		glm::vec3 lightDir = normalize(lightPos - intersection);
+		// dot product of light and surface normal, use it to multiply with 
+		// surface color and light color
+		float cos_theta = dot(objects[closestIdx]->getNormal(), lightDir);
+		glm::vec3 one(1.0f) * glm::vec3 two(1.0f);
+		objectColor * sources[k]->getLightColor();
+	}
+}
+
 int main(int argc, char* argv[]) {
 	_CrtMemState sOld;
 	_CrtMemState sNew;
@@ -126,6 +146,10 @@ int main(int argc, char* argv[]) {
 	sceneObjects.push_back(&scene_sphere);
 	sceneObjects.push_back(&plane);
 
+	// Fill Lights into a collection
+	std::vector<LightSources*> lights; 
+	lights.push_back(&theLight);
+
 	// world space to screen space
 	float alpha, beta;
 	glm::vec3 rayDir, rayOrigin;
@@ -141,26 +165,41 @@ int main(int argc, char* argv[]) {
 			Ray camRay(rayOrigin, rayDir);
 			
 			std::vector<double> intersections;
-			// store all intersect distances (even if they are negative, we'll weed
+			// store all intersection distances (even if they are negative, we'll weed
 			// them out later in findClosestObjIndeX() function)
 			for (int idx = 0; idx < sceneObjects.size(); idx++) {
 				float d = sceneObjects[idx]->findIntersection(camRay);
 				intersections.push_back(d);
 			}
+
+
 			// pixel color
-			Color pixelColor;
+			Color surfaceColor;
 			// find the index of closest object, get its color
 			int closestIndex = findClosestObjIndex(intersections);
 			// negative index means no intersection, use default color
-			// move on to next pixel
+			// move on to next pixel. 
+			// else, save the pixel color of the closest object and account for
+			// lights and shadows
 			if (closestIndex < 0) {
 				continue;
 			}
 			else {
-				pixelColor = sceneObjects[closestIndex]->getColor();
-				colorBuffer[x + y * options.width].r = pixelColor.getColorR();
-				colorBuffer[x + y * options.width].g = pixelColor.getColorG();
-				colorBuffer[x + y * options.width].b = pixelColor.getColorB();
+				Object* closestObj = sceneObjects[closestIndex];
+				surfaceColor = closestObj->getColor();
+				// find intersection point
+				glm::vec3 intersectPt = rayOrigin + 
+					(float)intersections[closestIndex] * rayDir; 
+
+				// find k-th light direction
+				getColorAt(intersectPt, lights, sceneObjects, closestIndex, ambientLightConst);
+
+
+
+
+				/*colorBuffer[x + y * options.width].r = surfaceColor.getColorR();
+				colorBuffer[x + y * options.width].g = surfaceColor.getColorG();
+				colorBuffer[x + y * options.width].b = surfaceColor.getColorB();*/
 			}
 			// TODO: cast generated rays into the scene 
 			// using a pointer to a list of Objects, call intersection function
@@ -173,8 +212,6 @@ int main(int argc, char* argv[]) {
 
 	// Free memory
 	delete[] colorBuffer;
-	//delete sceneObjects[0];
-	//delete sceneObjects[1];
 	while (!sceneObjects.empty()) {
 		sceneObjects.pop_back();
 	}

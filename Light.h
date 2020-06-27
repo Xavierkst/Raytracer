@@ -1,12 +1,13 @@
 #ifndef _LIGHT_H_
 #define _LIGHT_H_
 
+#include "LightSources.h"
 #include "Color.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-class Light {
+class Light : public LightSources {
 private:
 	glm::vec3 lightPos;
 	Color lightColor;

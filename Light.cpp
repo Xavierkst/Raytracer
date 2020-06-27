@@ -20,7 +20,3 @@ Color Light::getLightColor() {
 glm::vec3 Light::getLightPos() {
 	return lightPos;
 }
-
-//glm::vec3 Light::getLightDir() {
-//	return lightDir;
-//}
