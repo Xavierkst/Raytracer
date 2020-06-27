@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
 			alpha = ( (2 * (x + 0.5)/ (float)options.width) - 1.0f) 
 				* options.aspectRatio * tan(options.fov/2);
 			beta = (1 - (2 * (y + 0.5) / (float) options.height)) * tan(options.fov / 2);
-
+			// dsjadjsak
 			rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamDir());
 			rayOrigin = cameraPos;
 			Ray camRay(rayOrigin, rayDir);
