@@ -42,3 +42,49 @@ void Color::setColorB(double val) {
 void Color::setColorSpecial(double val) {
 	this->special = val;
 }
+
+Color Color::operator+(const Color &c)
+{
+	Color newColor;
+	newColor.r = this->r + c.r;
+	newColor.g = this->g + c.g;
+	newColor.b = this->b + c.b;
+	newColor.special = this->special;
+
+	return newColor;
+}
+
+Color Color::operator*(const Color &c)
+{
+	Color newColor;
+	newColor.r = this->getColorR() * c.r;
+	newColor.g = this->getColorG() * c.g;
+	newColor.b = this->getColorB() * c.b;
+	newColor.special = this->special;
+
+	return newColor;
+}
+
+Color Color::operator*(const double scalar)
+{
+	Color newColor;
+	newColor.r = this->getColorR() * scalar;
+	newColor.g = this->getColorG() * scalar;
+	newColor.b = this->getColorB() * scalar;
+	newColor.special = this->special;
+
+	return newColor;
+}
+
+Color Color::colorAvg(const Color& c)
+{
+	Color newColor;
+	newColor.r = ( this->getColorR() + c.r ) / 2.0f;
+	newColor.g = (this->getColorB() + c.g) / 2.0f;
+	newColor.b = (this->getColorR() + c.b) / 2.0f;
+	newColor.special = this->special;
+
+	return newColor;
+}
+
+

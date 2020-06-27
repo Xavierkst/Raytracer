@@ -22,7 +22,11 @@ public:
 	void setColorSpecial(double val);
 
 	// Color Math
-	Color 
+	Color operator+ (const Color &c);
+	Color operator* (const Color &c);
+	Color operator* (const double scalar);
+	// Average the colors with the one passed in
+	Color colorAvg (const Color& c);
 };
 
 #endif

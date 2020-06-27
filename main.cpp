@@ -36,6 +36,7 @@ struct Options {
 
 	float fov;
 	float aspectRatio;
+	float ambientLight;
 	glm::vec3 backgroundColor;
 	uint8_t maxDepth;
 };
@@ -84,21 +85,42 @@ int findClosestObjIndex(std::vector<double>& intersections) {
 	}
 }
 
-Color getColorAt(glm::vec3 intersection,
+// intersectingRayDir used for finding reflected Ray
+Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 	std::vector<LightSources*>& sources, std::vector<Object*> objects,
 	int closestIdx, float ambientLightConst) {
 
 	Color objectColor = objects[closestIdx]->getColor();
 	glm::vec3 objectNormal = objects[closestIdx]->getNormal();
 	for (int k = 0; k < sources.size(); k++) {
+		// find k-th light direction
 		glm::vec3 lightPos = sources[k]->getLightPos();
-		glm::vec3 lightDir = normalize(lightPos - intersection);
+		glm::vec3 lightDir = normalize(lightPos - intersectionPos);
 		// dot product of light and surface normal, use it to multiply with 
 		// surface color and light color
 		float cos_theta = dot(objects[closestIdx]->getNormal(), lightDir);
-		glm::vec3 one(1.0f) * glm::vec3 two(1.0f);
-		objectColor * sources[k]->getLightColor();
+
+		// when angle between normal and light dir is within 90 deg, light
+		// hits the surface, so we trace to the light source. Else, no light 
+		// hits it, we darken it with a scalar multip?..
+		if (cos_theta > 0) {
+			bool shadowed = false;
+			// find distance from intersection pt to light source
+			float intersection_to_light_dist = distance(intersectionPos, lightPos);
+			// Cast 2ndary rays, do another intersection test: 
+			Ray secondaryRay(intersectionPos, lightDir);
+
+			std::vector<double> intersectionArr;
+			for (int idx = 0; idx < objects.size(); idx++) {
+				float d = objects[idx]->findIntersection(secondaryRay);
+				intersectionArr.push_back(d);
+			}
+
+			objectColor* sources[k]->getLightColor();
+
+		}
 	}
+	return Color();
 }
 
 int main(int argc, char* argv[]) {
@@ -107,12 +129,14 @@ int main(int argc, char* argv[]) {
 	_CrtMemState sDiff;
 	_CrtMemCheckpoint(&sOld); //take a snapchot
 
-	std::cout << "Rendering... 123" << std::endl;
+	std::cout << "Rendering... " << std::endl;
+	// Setting up image options
 	Options options; 
 	options.width = 640;
 	options.height= 480;
 	options.aspectRatio = (float)options.width / (float)options.height;
 	options.fov = M_PI * (90.0f / 180.0f); 
+	options.ambientLight = 0.2;
 
 	// initializing all pixels (color buffer)
 	RGBColor* colorBuffer = new RGBColor[options.width*options.height];
@@ -173,28 +197,25 @@ int main(int argc, char* argv[]) {
 			}
 
 
-			// pixel color
-			Color surfaceColor;
 			// find the index of closest object, get its color
 			int closestIndex = findClosestObjIndex(intersections);
 			// negative index means no intersection, use default color
 			// move on to next pixel. 
 			// else, save the pixel color of the closest object and account for
-			// lights and shadows
-			if (closestIndex < 0) {
+			// lights and shadows -- 
+			// 2nd condition ensure that the intersection value shld be atleast 
+			// greater than the epsilon value T_MIN_VAL
+			if (closestIndex < 0 || intersections[closestIndex] < T_MIN_VAL) {
 				continue;
 			}
 			else {
 				Object* closestObj = sceneObjects[closestIndex];
-				surfaceColor = closestObj->getColor();
+				Color surfaceColor = closestObj->getColor();
 				// find intersection point
-				glm::vec3 intersectPt = rayOrigin + 
-					(float)intersections[closestIndex] * rayDir; 
+				glm::vec3 intersectPt = 
+					rayOrigin + (float)intersections[closestIndex]*rayDir; 
 
-				// find k-th light direction
-				getColorAt(intersectPt, lights, sceneObjects, closestIndex, ambientLightConst);
-
-
+				getColorAt(intersectPt, rayDir, lights, sceneObjects, closestIndex, options.ambientLight);
 
 
 				/*colorBuffer[x + y * options.width].r = surfaceColor.getColorR();
