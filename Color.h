@@ -20,6 +20,9 @@ public:
 	void setColorG(double val);
 	void setColorB(double val);
 	void setColorSpecial(double val);
+
+	// Color Math
+	Color 
 };
 
 #endif
