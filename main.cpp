@@ -89,13 +89,14 @@ int findClosestObjIndex(std::vector<double>& intersections) {
 Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 	std::vector<LightSources*>& sources, std::vector<Object*> objects,
 	int closestIdx, float ambientLightConst) {
-
+	// get closest object color 
 	Color objectColor = objects[closestIdx]->getColor();
 	glm::vec3 objectNormal = objects[closestIdx]->getNormal();
 	for (int k = 0; k < sources.size(); k++) {
 		// find k-th light direction
 		glm::vec3 lightPos = sources[k]->getLightPos();
 		glm::vec3 lightDir = normalize(lightPos - intersectionPos);
+
 		// dot product of light and surface normal, use it to multiply with 
 		// surface color and light color
 		float cos_theta = dot(objects[closestIdx]->getNormal(), lightDir);
@@ -108,19 +109,32 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 			// find distance from intersection pt to light source
 			float intersection_to_light_dist = distance(intersectionPos, lightPos);
 			// Cast 2ndary rays, do another intersection test: 
-			Ray secondaryRay(intersectionPos, lightDir);
-
+			Ray shadowRay(intersectionPos, lightDir);
+			// cont @ 56:50 -- https://www.youtube.com/watch?v=vE5c2hTRLZM&list=PLHm_I0tE5kKPPWXkTTtOn8fkcwEGZNETh&index=7
 			std::vector<double> intersectionArr;
+			// iterate thru all the objects 
 			for (int idx = 0; idx < objects.size(); idx++) {
-				float d = objects[idx]->findIntersection(secondaryRay);
+				float d = objects[idx]->findIntersection(shadowRay);
 				intersectionArr.push_back(d);
 			}
+			// check any object intersects with secondary ray:
+			int closestObjIdx = findClosestObjIndex(intersectionArr);
+			if (closestObjIdx < 0) {
+				// no intersection occured add light value to it:
+				// sufaceColor * LightColor * dot prod bet. surface normal & light ray dir
+				objectColor = objectColor * sources[k]->getLightColor() * cos_theta;
 
+			}
+			else {
+				// intersection occured 
+				shadowed = true;
+				objects[closestObjIdx]->
+			}
 			objectColor* sources[k]->getLightColor();
-
+			
 		}
 	}
-	return Color();
+	return objectColor;
 }
 
 int main(int argc, char* argv[]) {
@@ -195,7 +209,6 @@ int main(int argc, char* argv[]) {
 				float d = sceneObjects[idx]->findIntersection(camRay);
 				intersections.push_back(d);
 			}
-
 
 			// find the index of closest object, get its color
 			int closestIndex = findClosestObjIndex(intersections);
