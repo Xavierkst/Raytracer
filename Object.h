@@ -13,7 +13,7 @@ public:
 
 	virtual Color getColor();
 
-	virtual glm::vec3 getNormal();
+	virtual glm::vec3 getNormal(glm::vec3 point);
 };
 
 #endif

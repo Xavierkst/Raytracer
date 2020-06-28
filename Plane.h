@@ -18,7 +18,7 @@ public:
 	Plane();
 	Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor);
 
-	glm::vec3 getNormal();
+	glm::vec3 getNormal(glm::vec3 point);
 	Color getColor();
 	glm::vec3 getPlaneCenter(); 
 	

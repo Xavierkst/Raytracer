@@ -90,16 +90,17 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 	std::vector<LightSources*>& sources, std::vector<Object*> objects,
 	int closestIdx, float ambientLightConst) {
 	// get closest object color 
-	Color objectColor = objects[closestIdx]->getColor();
-	glm::vec3 objectNormal = objects[closestIdx]->getNormal();
+	Color finalColor = objects[closestIdx]->getColor() * ambientLightConst;
+	glm::vec3 objectNormal = objects[closestIdx]->getNormal(intersectionPos);
+
+	// iterate thru all light sources
 	for (int k = 0; k < sources.size(); k++) {
-		// find k-th light direction
 		glm::vec3 lightPos = sources[k]->getLightPos();
 		glm::vec3 lightDir = normalize(lightPos - intersectionPos);
 
 		// dot product of light and surface normal, use it to multiply with 
 		// surface color and light color
-		float cos_theta = dot(objects[closestIdx]->getNormal(), lightDir);
+		float cos_theta = dot(objects[closestIdx]->getNormal(intersectionPos), lightDir);
 
 		// when angle between normal and light dir is within 90 deg, light
 		// hits the surface, so we trace to the light source. Else, no light 
@@ -110,31 +111,44 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 			float intersection_to_light_dist = distance(intersectionPos, lightPos);
 			// Cast 2ndary rays, do another intersection test: 
 			Ray shadowRay(intersectionPos, lightDir);
-			// cont @ 56:50 -- https://www.youtube.com/watch?v=vE5c2hTRLZM&list=PLHm_I0tE5kKPPWXkTTtOn8fkcwEGZNETh&index=7
 			std::vector<double> intersectionArr;
 			// iterate thru all the objects 
 			for (int idx = 0; idx < objects.size(); idx++) {
-				float d = objects[idx]->findIntersection(shadowRay);
+				double d = objects[idx]->findIntersection(shadowRay);
 				intersectionArr.push_back(d);
 			}
 			// check any object intersects with secondary ray:
 			int closestObjIdx = findClosestObjIndex(intersectionArr);
+			
 			if (closestObjIdx < 0) {
-				// no intersection occured add light value to it:
+				// NO intersection occured, add light value to it:
 				// sufaceColor * LightColor * dot prod bet. surface normal & light ray dir
-				objectColor = objectColor * sources[k]->getLightColor() * cos_theta;
+				finalColor = finalColor + objects[closestIdx]->getColor()*sources[k]->getLightColor() * cos_theta;
 
+				// account for specular -- shininess of object
+				// if material is shiny (has special component -- note shiny is in range [0,1])
+				// any value beyond is not considered shiny
+				if (finalColor.getColorSpecial() > 0 && finalColor.getColorSpecial() <= 1.0f) {
+					glm::vec3 scalar = 2.0f * (intersectingRayDir +
+						objectNormal * dot(intersectingRayDir, objectNormal));
+					glm::vec3 reflectionDir = normalize(-intersectingRayDir + scalar);
+
+					double specularVal = dot(reflectionDir, lightDir);
+					if (specularVal > 0) {
+						// not sure why raised to the 10
+						specularVal = pow(specularVal, 10);
+						finalColor = finalColor + sources[k]->getLightColor() * specularVal * finalColor.getColorSpecial();
+					}
+				}
 			}
 			else {
-				// intersection occured 
-				shadowed = true;
-				objects[closestObjIdx]->
+				// intersection occured: no contribution to finalColor 
+				// by this light source, move on to next light source
+				continue;
 			}
-			objectColor* sources[k]->getLightColor();
-			
 		}
 	}
-	return objectColor;
+	return finalColor;
 }
 
 int main(int argc, char* argv[]) {
@@ -146,8 +160,8 @@ int main(int argc, char* argv[]) {
 	std::cout << "Rendering... " << std::endl;
 	// Setting up image options
 	Options options; 
-	options.width = 640;
-	options.height= 480;
+	options.width = 1080;
+	options.height= 720;
 	options.aspectRatio = (float)options.width / (float)options.height;
 	options.fov = M_PI * (90.0f / 180.0f); 
 	options.ambientLight = 0.2;
@@ -155,16 +169,16 @@ int main(int argc, char* argv[]) {
 	// initializing all pixels (color buffer)
 	RGBColor* colorBuffer = new RGBColor[options.width*options.height];
 	for (int i = 0; i < options.width*options.height; i++) {
-		colorBuffer[i].r = 1.0;
-		colorBuffer[i].g = 1.0;
-		colorBuffer[i].b = 0.0;
+		colorBuffer[i].r = 0.0f;
+		colorBuffer[i].g = 0.0f;
+		colorBuffer[i].b = 0.0f;
 	}
 
 	// Colors
 	Color whiteLight(1.0f, 1.0f, 1.0f, 0.0f);
 	Color maroon(.5f, .25f, .25f, 0);
-	Light theLight(glm::vec3(0.0f, 5.0f, 0.0f), whiteLight);
-	Color prettyGreen(0.5f, 1.0f, 0.5f, 0.3f);
+	Light theLight(glm::vec3(-3.0f, 5.0f, 0.0f), whiteLight);
+	Color prettyGreen(0.5f, 1.0f, 0.5f, 0.5f);
 	Color gray(.5f, .5f, .5f, .0f);
 	Color black(.0f, .0f, .0f, .0f);
 
@@ -228,12 +242,12 @@ int main(int argc, char* argv[]) {
 				glm::vec3 intersectPt = 
 					rayOrigin + (float)intersections[closestIndex]*rayDir; 
 
-				getColorAt(intersectPt, rayDir, lights, sceneObjects, closestIndex, options.ambientLight);
+				Color finalColor = getColorAt(intersectPt, rayDir, lights, 
+					sceneObjects, closestIndex, options.ambientLight);
 
-
-				/*colorBuffer[x + y * options.width].r = surfaceColor.getColorR();
-				colorBuffer[x + y * options.width].g = surfaceColor.getColorG();
-				colorBuffer[x + y * options.width].b = surfaceColor.getColorB();*/
+				colorBuffer[x + y * options.width].r = finalColor.getColorR();
+				colorBuffer[x + y * options.width].g = finalColor.getColorG();
+				colorBuffer[x + y * options.width].b = finalColor.getColorB();
 			}
 			// TODO: cast generated rays into the scene 
 			// using a pointer to a list of Objects, call intersection function

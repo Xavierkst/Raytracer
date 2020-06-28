@@ -7,7 +7,7 @@ Plane::Plane() {
 }
 
 Plane::Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor) {
-	this->normal = normal;
+	this->normal = normalize(normal);
 	this->color = pColor;
 	this->center = planeCenter;
 }
@@ -17,7 +17,7 @@ double Plane::findIntersection(Ray ray) {
 
 	// Check if ray is || to plane 
 	// i.e Denominator == 0
-	float denom = dot(ray.getRayDir(), this->getNormal());
+	float denom = dot(ray.getRayDir(), this->normal);
 	if (denom == 0) {
 		return -1.0f;
 	}
@@ -35,7 +35,7 @@ double Plane::findIntersection(Ray ray) {
 	return t;
 }
 
-glm::vec3 Plane::getNormal() {
+glm::vec3 Plane::getNormal(glm::vec3 point) {
 	return normal;
 }
 
