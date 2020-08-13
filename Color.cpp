@@ -87,4 +87,40 @@ Color Color::colorAvg(const Color& c)
 	return newColor;
 }
 
+Color Color::colorClip()
+{
+	// if all 3 color components are each greater than 1.0f
+	// clip them at 1.0f and return it 
+	double addedLight = getColorB() + getColorG() + getColorR();
+	double excessLight = addedLight - 3.0f;
+	if (excessLight > 0.0f) {
+		setColorR(getColorR() + excessLight * (getColorR() / addedLight));
+		setColorG(getColorG() + excessLight * (getColorG() / addedLight));
+		setColorB(getColorB() + excessLight * (getColorB() / addedLight));
+	}
 
+	// if any one of the 3 components are greater than 1.0f, clip
+	// their upper bound to 1.0f
+	if (getColorB() > 1.0f) {
+		setColorB(1.0f);
+	}
+	else if (getColorB() < 0.0f) {
+		setColorB(0.0f);
+	}
+
+	if (getColorG() > 1.0f) {
+		setColorG(1.0f);
+	}
+	else if (getColorG() < 0.0f) {
+		setColorG(0.0f);
+	}
+
+	if (getColorR() > 1.0f) {
+		setColorR(1.0f);
+	}
+	else if (getColorR() < 0.0f) {
+		setColorR(0.0f);
+	}
+
+	return *this;
+}

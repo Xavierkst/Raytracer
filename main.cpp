@@ -102,42 +102,54 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 		// surface color and light color
 		float cos_theta = dot(objects[closestIdx]->getNormal(intersectionPos), lightDir);
 
-		// when angle between normal and light dir is within 90 deg, light
-		// hits the surface, so we trace to the light source. Else, no light 
+		// when angle between normal and light dir is at most 90 deg, light
+		// hits the surface, so we attempt to trace to light source. Else, no light 
 		// hits it, we darken it with a scalar multip?..
 		if (cos_theta > 0) {
 			bool shadowed = false;
 			// find distance from intersection pt to light source
 			float intersection_to_light_dist = distance(intersectionPos, lightPos);
-			// Cast 2ndary rays, do another intersection test: 
+			// Cast 2ndary rays and do intersection test: 
 			Ray shadowRay(intersectionPos, lightDir);
 			std::vector<double> intersectionArr;
 			// iterate thru all the objects 
 			for (int idx = 0; idx < objects.size(); idx++) {
 				double d = objects[idx]->findIntersection(shadowRay);
+				// collect an array of distance values, including the intersections that 
+				// completely miss objects, those are stored in Arr as -ve values
+				// which we filter out later in findClosestObjIndex()
 				intersectionArr.push_back(d);
 			}
 			// check any object intersects with secondary ray:
 			int closestObjIdx = findClosestObjIndex(intersectionArr);
 			
 			if (closestObjIdx < 0) {
-				// NO intersection occured, add light value to it:
-				// sufaceColor * LightColor * dot prod bet. surface normal & light ray dir
-				finalColor = finalColor + objects[closestIdx]->getColor()*sources[k]->getLightColor() * cos_theta;
+				// NO intersection occured--object not blocked! 
+				// add light value to it:
+				// sufaceColor * LightColor * dot prod bet. surface normal & light dir
+				// Note: closestIdx is the idx of the closest object we hit, are we generating
+				// shadow rays to the light from --> closestIdx != closestObjIdx
+				finalColor = finalColor + objects[closestIdx]->getColor() * 
+					sources[k]->getLightColor() * cos_theta;
 
-				// account for specular -- shininess of object
+				// account for specular (shininess of object)
 				// if material is shiny (has special component -- note shiny is in range [0,1])
 				// any value beyond is not considered shiny
-				if (finalColor.getColorSpecial() > 0 && finalColor.getColorSpecial() <= 1.0f) {
-					glm::vec3 scalar = 2.0f * (intersectingRayDir +
+				if (finalColor.getColorSpecial() > 0 && 
+					finalColor.getColorSpecial() <= 1.0f) {
+					/*glm::vec3 scalar = 2.0f * (intersectingRayDir +
 						objectNormal * dot(intersectingRayDir, objectNormal));
-					glm::vec3 reflectionDir = normalize(-intersectingRayDir + scalar);
+					glm::vec3 reflectionDir = normalize(-intersectingRayDir + scalar);*/
+
+					glm::vec3 scalar = 2.0f * objectNormal * dot(intersectingRayDir, objectNormal);
+					glm::vec3 reflectionDir = normalize(scalar - intersectingRayDir);
 
 					double specularVal = dot(reflectionDir, lightDir);
-					if (specularVal > 0) {
+					if (specularVal > 0.0f) {
 						// not sure why raised to the 10
 						specularVal = pow(specularVal, 10);
-						finalColor = finalColor + sources[k]->getLightColor() * specularVal * finalColor.getColorSpecial();
+						finalColor = finalColor + sources[k]->getLightColor() * 
+							specularVal * finalColor.getColorSpecial();
 					}
 				}
 			}
@@ -152,10 +164,11 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 }
 
 int main(int argc, char* argv[]) {
+	// checking for memory leaks
 	_CrtMemState sOld;
 	_CrtMemState sNew;
 	_CrtMemState sDiff;
-	_CrtMemCheckpoint(&sOld); //take a snapchot
+	_CrtMemCheckpoint(&sOld); //take a snapshot
 
 	std::cout << "Rendering... " << std::endl;
 	// Setting up image options
@@ -166,7 +179,7 @@ int main(int argc, char* argv[]) {
 	options.fov = M_PI * (90.0f / 180.0f); 
 	options.ambientLight = 0.2;
 
-	// initializing all pixels (color buffer)
+	// initializing all pixels to default value (color buffer)
 	RGBColor* colorBuffer = new RGBColor[options.width*options.height];
 	for (int i = 0; i < options.width*options.height; i++) {
 		colorBuffer[i].r = 0.0f;
@@ -176,7 +189,7 @@ int main(int argc, char* argv[]) {
 
 	// Colors
 	Color whiteLight(1.0f, 1.0f, 1.0f, 0.0f);
-	Color maroon(.5f, .25f, .25f, 0);
+	Color maroon(.5f, .25f, .25f, 0.0f);
 	Light theLight(glm::vec3(-3.0f, 5.0f, 0.0f), whiteLight);
 	Color prettyGreen(0.5f, 1.0f, 0.5f, 0.5f);
 	Color gray(.5f, .5f, .5f, .0f);
@@ -211,7 +224,7 @@ int main(int argc, char* argv[]) {
 			alpha = ( (2 * (x + 0.5)/ (float)options.width) - 1.0f) 
 				* options.aspectRatio * tan(options.fov/2);
 			beta = (1 - (2 * (y + 0.5) / (float) options.height)) * tan(options.fov / 2);
-			// dsjadjsak
+			// 
 			rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamDir());
 			rayOrigin = cameraPos;
 			Ray camRay(rayOrigin, rayDir);
@@ -226,12 +239,14 @@ int main(int argc, char* argv[]) {
 
 			// find the index of closest object, get its color
 			int closestIndex = findClosestObjIndex(intersections);
-			// negative index means no intersection, use default color
+
+			// negative index means no intersection, use default color and
 			// move on to next pixel. 
-			// else, save the pixel color of the closest object and account for
-			// lights and shadows -- 
-			// 2nd condition ensure that the intersection value shld be atleast 
+			// 2nd condition ensures that the intersection value shld be atleast 
 			// greater than the epsilon value T_MIN_VAL
+
+			// else, save the pixel color of the closest object (accounting for
+			// lights and shadows)
 			if (closestIndex < 0 || intersections[closestIndex] < T_MIN_VAL) {
 				continue;
 			}
@@ -240,16 +255,16 @@ int main(int argc, char* argv[]) {
 				Color surfaceColor = closestObj->getColor();
 				// find intersection point
 				glm::vec3 intersectPt = 
-					rayOrigin + (float)intersections[closestIndex]*rayDir; 
+					rayOrigin + (float)intersections[closestIndex] * rayDir;
 
 				Color finalColor = getColorAt(intersectPt, rayDir, lights, 
 					sceneObjects, closestIndex, options.ambientLight);
-
+				finalColor = finalColor.colorClip();
 				colorBuffer[x + y * options.width].r = finalColor.getColorR();
 				colorBuffer[x + y * options.width].g = finalColor.getColorG();
 				colorBuffer[x + y * options.width].b = finalColor.getColorB();
 			}
-			// TODO: cast generated rays into the scene 
+			// TO-DO: cast generated rays into the scene 
 			// using a pointer to a list of Objects, call intersection function
 			// continue this url: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
 		}

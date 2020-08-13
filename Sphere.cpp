@@ -41,7 +41,7 @@ double Sphere::findIntersection(Ray ray) {
 double Sphere::calcDistance(float a, float b, float c) {
 	// 4 cases  
 	// 1. Ray grazes sphere (tangent): 2 real tVal, both same
-	// 2. Ray origin starts from inside sphere: 1 -, 1 +ve tVal
+	// 2. Ray origin starts from inside sphere: 1 -ve, 1 +ve tVal
 	// take +ve
 	// 3. Ray completely misses: 2 complex values, take none
 	// 4. Ray intersects sphere at 2 non-tangent points: 2 +ve tVal

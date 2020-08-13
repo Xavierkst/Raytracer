@@ -27,6 +27,8 @@ public:
 	Color operator* (const double scalar);
 	// Average the colors with the one passed in
 	Color colorAvg (const Color& c);
+
+	Color colorClip();
 };
 
 #endif
