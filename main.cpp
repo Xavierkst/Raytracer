@@ -86,6 +86,8 @@ int findClosestObjIndex(std::vector<double>& intersections) {
 }
 
 // intersectingRayDir used for finding reflected Ray
+// intersectingRayDir i.e. opposite of viewDirection V 
+// view direction V points from the object to eye
 Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 	std::vector<LightSources*>& sources, std::vector<Object*> objects,
 	int closestIdx, float ambientLightConst) {
@@ -131,20 +133,24 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 				// shadow rays to the light from --> closestIdx != closestObjIdx
 				finalColor = finalColor + objects[closestIdx]->getColor() * 
 					sources[k]->getLightColor() * cos_theta;
-
+				
 				// account for specular (shininess of object)
 				// if material is shiny (has special component -- note shiny is in range [0,1])
 				// any value beyond is not considered shiny
-				if (finalColor.getColorSpecial() > 0 && 
-					finalColor.getColorSpecial() <= 1.0f) {
+
+			/*	if (finalColor.getColorSpecial() > 0.0f && 
+					finalColor.getColorSpecial() <= 1.0f) 
+				*/
+					if (objects[closestIdx]->getColor().getColorSpecial() > 0.0f &&
+						objects[closestIdx]->getColor().getColorSpecial() <= 1.0f) {
 					/*glm::vec3 scalar = 2.0f * (intersectingRayDir +
 						objectNormal * dot(intersectingRayDir, objectNormal));
 					glm::vec3 reflectionDir = normalize(-intersectingRayDir + scalar);*/
 
-					glm::vec3 scalar = 2.0f * objectNormal * dot(intersectingRayDir, objectNormal);
-					glm::vec3 reflectionDir = normalize(scalar - intersectingRayDir);
-
-					double specularVal = dot(reflectionDir, lightDir);
+					glm::vec3 scalar = 2.0f * objectNormal * dot(lightDir, objectNormal);
+					glm::vec3 reflectionDir = normalize(scalar - lightDir);
+					// negative of intersectingRayDir == viewDir
+					double specularVal = dot(reflectionDir, -intersectingRayDir);
 					if (specularVal > 0.0f) {
 						// not sure why raised to the 10
 						specularVal = pow(specularVal, 10);
