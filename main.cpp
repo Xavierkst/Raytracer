@@ -91,11 +91,25 @@ int findClosestObjIndex(std::vector<double>& intersections) {
 Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 	std::vector<LightSources*>& sources, std::vector<Object*> objects,
 	int closestIdx, float ambientLightConst) {
+
+
+	if (objects[closestIdx]->getColor().getColorSpecial() == 2.0f) {
+		
+		int squareTile = floor(intersectionPos.x) + floor(intersectionPos.z);
+		if (squareTile % 2 == 0) {
+			objects[closestIdx]->setColor(0.0f, 0.0f, 0.0f);
+		}
+		else {
+			objects[closestIdx]->setColor(1.0f, 1.0f, 1.0f);
+		}
+	}
+
 	// get closest object color 
 	Color finalColor = objects[closestIdx]->getColor() * ambientLightConst;
 	glm::vec3 objectNormal = objects[closestIdx]->getNormal(intersectionPos);
 
-	// iterate thru all light sources
+	//finalColor = finalColor * ambientLightConst;
+ 	// iterate thru all light sources
 	for (int k = 0; k < sources.size(); k++) {
 		glm::vec3 lightPos = sources[k]->getLightPos();
 		glm::vec3 lightDir = normalize(lightPos - intersectionPos);
@@ -108,7 +122,7 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 		// hits the surface, so we attempt to trace to light source. Else, no light 
 		// hits it, we darken it with a scalar multip?..
 		if (cos_theta > 0) {
-			bool shadowed = false;
+			//bool shadowed = false;
 			// find distance from intersection pt to light source
 			float intersection_to_light_dist = distance(intersectionPos, lightPos);
 			// Cast 2ndary rays and do intersection test: 
@@ -183,7 +197,7 @@ int main(int argc, char* argv[]) {
 	options.height= 720;
 	options.aspectRatio = (float)options.width / (float)options.height;
 	options.fov = M_PI * (90.0f / 180.0f); 
-	options.ambientLight = 0.2;
+	options.ambientLight = 0.2f;
 
 	// initializing all pixels to default value (color buffer)
 	RGBColor* colorBuffer = new RGBColor[options.width*options.height];
@@ -195,15 +209,19 @@ int main(int argc, char* argv[]) {
 
 	// Colors
 	Color whiteLight(1.0f, 1.0f, 1.0f, 0.0f);
-	Color maroon(.5f, .25f, .25f, 0.0f);
-	Light theLight(glm::vec3(-3.0f, 5.0f, 0.0f), whiteLight);
+	// special value of flooring set to 2
+	Color maroon(.5f, .25f, .25f, 2.0f);
+	Color white(1.0f, 1.0f, 1.0f, 2.0f);
 	Color prettyGreen(0.5f, 1.0f, 0.5f, 0.5f);
 	Color gray(.5f, .5f, .5f, .0f);
 	Color black(.0f, .0f, .0f, .0f);
 
+	// Lights
+	Light theLight(glm::vec3(-7.0f, 5.0f, -3.0f), whiteLight);
+
 	// Objects
 	Sphere scene_sphere(glm::vec3(.0f, .0f, 4.0f), 1.0f, prettyGreen);
-	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(.0f, -1.0f, .0f), maroon);
+	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(.0f, -1.0f, .0f), white);
 
 	// Generating Camera  
 	glm::vec3 cameraPos(.0f, .0f, 0.0f);

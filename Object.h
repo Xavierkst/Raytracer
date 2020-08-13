@@ -12,7 +12,7 @@ public:
 	virtual double findIntersection(Ray ray);
 
 	virtual Color getColor();
-
+	virtual void setColor(float r, float g, float b);
 	virtual glm::vec3 getNormal(glm::vec3 point);
 };
 

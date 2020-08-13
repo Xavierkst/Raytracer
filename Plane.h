@@ -20,6 +20,8 @@ public:
 
 	glm::vec3 getNormal(glm::vec3 point);
 	Color getColor();
+	void setColor(float r, float g, float b);
+
 	glm::vec3 getPlaneCenter(); 
 	
 	double findIntersection(Ray ray);

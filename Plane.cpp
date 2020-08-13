@@ -46,3 +46,9 @@ glm::vec3 Plane::getPlaneCenter() {
 Color Plane::getColor() {
 	return color;
 }
+
+void Plane::setColor(float r, float g, float b) {
+	this->color.setColorR(r);
+	this->color.setColorG(g);
+	this->color.setColorB(b);
+}

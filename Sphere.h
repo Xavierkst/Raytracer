@@ -19,6 +19,7 @@ public:
 
 	glm::vec3 getSpherePos();
 	Color getColor();
+	void setColor(float r, float g, float b);
 	float getSphereRadius();
 	glm::vec3 getNormal(glm::vec3 point);
 	double findIntersection(Ray ray);

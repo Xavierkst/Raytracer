@@ -19,6 +19,11 @@ glm::vec3 Sphere::getSpherePos() {
 Color Sphere::getColor() {
 	return color;
 }
+void Sphere::setColor(float r, float g, float b) {
+	this->color.setColorR(r);
+	this->color.setColorG(g);
+	this->color.setColorB(b);
+}
 
 float Sphere::getSphereRadius() {
 	return radius;
