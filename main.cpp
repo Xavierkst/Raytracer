@@ -18,7 +18,7 @@
 #include "Plane.h"
 #include "Ray.h"
 #include "Object.h"
-
+#include "time.h"
 
 
 #include "windows.h"
@@ -104,12 +104,41 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 		}
 	}
 
-	// get closest object color 
+	// get closest (primary) object color 
 	Color finalColor = objects[closestIdx]->getColor() * ambientLightConst;
 	glm::vec3 objectNormal = objects[closestIdx]->getNormal(intersectionPos);
 
-	//finalColor = finalColor * ambientLightConst;
- 	// iterate thru all light sources
+	// Reflection rays: 
+	// cast secondary rays from the primary intersection 
+	// point and do intersection test again with all objects in the scene.
+	// Sum up their surface color contributions with the primary object's 
+	// surface color (recursively call getColorAt() again) 
+	
+	// check if object has a shiny/glossy property (means has reflections)
+	// i.e. specialValue in range [0,1]
+	if (objects[closestIdx]->getColor().getColorSpecial() > 0.0f &&
+		objects[closestIdx]->getColor().getColorSpecial() <= 1.0f) {
+		// Do intersection test at the point of intersection on the primary obj
+		glm::vec3 scalar = 2.0f * objectNormal * dot(intersectingRayDir, objectNormal);
+		glm::vec3 reflectionDir = normalize(intersectingRayDir - scalar);
+		Ray reflection_ray(intersectionPos, reflectionDir);
+		std::vector<double> reflectionArr; 
+
+		for (int j = 0; j < objects.size(); j++) {
+			reflectionArr.push_back(objects[j]->findIntersection(reflection_ray));
+		}
+		int closestRefObjIdx = findClosestObjIndex(reflectionArr);
+		// if closest reflected Object index is not -1, the reflected ray
+		// hit an object. So we sample the color of the object
+		if (closestRefObjIdx != -1) {
+			glm::vec3 ref_intersect_pt = intersectionPos + reflectionDir * (float)reflectionArr[closestRefObjIdx];
+			finalColor = finalColor + getColorAt(ref_intersect_pt, reflectionDir,
+				sources, objects, closestRefObjIdx, ambientLightConst) * 
+				objects[closestIdx]->getColor().getColorSpecial();
+		}
+	}
+ 	// iterate thru all light sources and sum up their effects
+	// on the primary object's surface color 
 	for (int k = 0; k < sources.size(); k++) {
 		glm::vec3 lightPos = sources[k]->getLightPos();
 		glm::vec3 lightDir = normalize(lightPos - intersectionPos);
@@ -128,6 +157,7 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 			// Cast 2ndary rays and do intersection test: 
 			Ray shadowRay(intersectionPos, lightDir);
 			std::vector<double> intersectionArr;
+
 			// iterate thru all the objects 
 			for (int idx = 0; idx < objects.size(); idx++) {
 				double d = objects[idx]->findIntersection(shadowRay);
@@ -136,15 +166,21 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 				// which we filter out later in findClosestObjIndex()
 				intersectionArr.push_back(d);
 			}
-			// check any object intersects with secondary ray:
+
+			// TEST FOR SHADOWS --
+			// check if any object intersects with secondary ray:
 			int closestObjIdx = findClosestObjIndex(intersectionArr);
 			
 			if (closestObjIdx < 0) {
-				// NO intersection occured--object not blocked! 
+				// NO intersection occured--light is not blocked!
 				// add light value to it:
 				// sufaceColor * LightColor * dot prod bet. surface normal & light dir
-				// Note: closestIdx is the idx of the closest object we hit, are we generating
-				// shadow rays to the light from --> closestIdx != closestObjIdx
+				// Note: closestIdx is the idx of the closest object we hit that we are generating
+				// shadow rays from, directed towards the light --> closestIdx != closestObjIdx
+				// IMPT: the algorithm we use to do intersection test assumes the light to be 
+				// infinitely far away, so the actual light position is actually a light direction
+				// i.e. objects can be further from the primary object than the light is and still
+				// generate shadow on the primary object
 				finalColor = finalColor + objects[closestIdx]->getColor() * 
 					sources[k]->getLightColor() * cos_theta;
 				
@@ -155,8 +191,8 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 			/*	if (finalColor.getColorSpecial() > 0.0f && 
 					finalColor.getColorSpecial() <= 1.0f) 
 				*/
-					if (objects[closestIdx]->getColor().getColorSpecial() > 0.0f &&
-						objects[closestIdx]->getColor().getColorSpecial() <= 1.0f) {
+				if (objects[closestIdx]->getColor().getColorSpecial() > 0.0f &&
+					objects[closestIdx]->getColor().getColorSpecial() <= 1.0f) {
 					/*glm::vec3 scalar = 2.0f * (intersectingRayDir +
 						objectNormal * dot(intersectingRayDir, objectNormal));
 					glm::vec3 reflectionDir = normalize(-intersectingRayDir + scalar);*/
@@ -198,6 +234,10 @@ int main(int argc, char* argv[]) {
 	options.aspectRatio = (float)options.width / (float)options.height;
 	options.fov = M_PI * (90.0f / 180.0f); 
 	options.ambientLight = 0.2f;
+
+	// include time
+	clock_t t1, t2; 
+	t1 = clock();
 
 	// initializing all pixels to default value (color buffer)
 	RGBColor* colorBuffer = new RGBColor[options.width*options.height];
@@ -296,7 +336,8 @@ int main(int argc, char* argv[]) {
 
 	std::string fileName = "testFile.jpg";
 	writeImage(fileName, 1.0, 2.2, colorBuffer, options.width, options.height);
-
+	t2 = clock();
+	std::cout << "Render time: " << (float)(t2 - t1) / 1000.0f << " seconds" << std::endl;
 	// Free memory
 	delete[] colorBuffer;
 	while (!sceneObjects.empty()) {

@@ -19,6 +19,7 @@ glm::vec3 Sphere::getSpherePos() {
 Color Sphere::getColor() {
 	return color;
 }
+
 void Sphere::setColor(float r, float g, float b) {
 	this->color.setColorR(r);
 	this->color.setColorG(g);
@@ -44,14 +45,14 @@ double Sphere::findIntersection(Ray ray) {
 }
 
 double Sphere::calcDistance(float a, float b, float c) {
-	// 4 cases  
+	// 4 cases:
 	// 1. Ray grazes sphere (tangent): 2 real tVal, both same
 	// 2. Ray origin starts from inside sphere: 1 -ve, 1 +ve tVal
 	// take +ve
 	// 3. Ray completely misses: 2 complex values, take none
 	// 4. Ray intersects sphere at 2 non-tangent points: 2 +ve tVal
 	// take smaller of 2
-	float discriminant = (b*b ) - (4*a*c);
+	float discriminant = (b*b) - (4*a*c);
 	// if t is complex (negative)
 	if (discriminant < 0.0f) {
 		return -1.0f;
@@ -70,7 +71,7 @@ double Sphere::calcDistance(float a, float b, float c) {
 		return t2;
 	}
 	else
-		// Ray misses entirely
+		// Ray misses entirely, return -1
 		return -1.0f;
 }
 

@@ -22,7 +22,8 @@ double Plane::findIntersection(Ray ray) {
 		return -1.0f;
 	}
 
-	// Abitrary pt A on the plane
+	// this->center is the "center" of the plane, 
+	// i.e. an Abitrary pt A on the plane
 	float numer = dot(this->center - ray.getRayOrig(), this->normal);
 	t = numer / denom;
 	
