@@ -20,6 +20,7 @@
 #include "Object.h"
 #include "time.h"
 
+#define MAX_RECURSION_DEPTH 1
 
 #include "windows.h"
 #define _CRTDBG_MAP_ALLOC //to get more details
@@ -90,7 +91,7 @@ int findClosestObjIndex(std::vector<double>& intersections) {
 // view direction V points from the object to eye
 Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 	std::vector<LightSources*>& sources, std::vector<Object*> objects,
-	int closestIdx, float ambientLightConst) {
+	int closestIdx, float ambientLightConst, int reflectionDepth) {
 
 
 	if (objects[closestIdx]->getColor().getColorSpecial() == 2.0f) {
@@ -117,7 +118,7 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 	// check if object has a shiny/glossy property (means has reflections)
 	// i.e. specialValue in range [0,1]
 	if (objects[closestIdx]->getColor().getColorSpecial() > 0.0f &&
-		objects[closestIdx]->getColor().getColorSpecial() <= 1.0f) {
+		objects[closestIdx]->getColor().getColorSpecial() <= 1.0f && reflectionDepth < MAX_RECURSION_DEPTH) {
 		// Do intersection test at the point of intersection on the primary obj
 		glm::vec3 scalar = 2.0f * objectNormal * dot(intersectingRayDir, objectNormal);
 		glm::vec3 reflectionDir = normalize(intersectingRayDir - scalar);
@@ -133,7 +134,7 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 		if (closestRefObjIdx != -1) {
 			glm::vec3 ref_intersect_pt = intersectionPos + reflectionDir * (float)reflectionArr[closestRefObjIdx];
 			finalColor = finalColor + getColorAt(ref_intersect_pt, reflectionDir,
-				sources, objects, closestRefObjIdx, ambientLightConst) * 
+				sources, objects, closestRefObjIdx, ambientLightConst, ++reflectionDepth) *
 				objects[closestIdx]->getColor().getColorSpecial();
 		}
 	}
@@ -250,7 +251,7 @@ int main(int argc, char* argv[]) {
 	// Colors
 	Color whiteLight(1.0f, 1.0f, 1.0f, 0.0f);
 	// special value of flooring set to 2
-	Color maroon(.5f, .25f, .25f, 2.0f);
+	Color maroon(.5f, .25f, .25f, 0.5f);
 	Color white(1.0f, 1.0f, 1.0f, 2.0f);
 	Color prettyGreen(0.5f, 1.0f, 0.5f, 0.5f);
 	Color gray(.5f, .5f, .5f, .0f);
@@ -260,11 +261,13 @@ int main(int argc, char* argv[]) {
 	Light theLight(glm::vec3(-7.0f, 5.0f, -3.0f), whiteLight);
 
 	// Objects
-	Sphere scene_sphere(glm::vec3(.0f, .0f, 4.0f), 1.0f, prettyGreen);
+	Sphere scene_sphere(glm::vec3(.0f, .0f, 3.0f), 1.0f, prettyGreen);
+	Sphere scene_sphere2(glm::vec3(1.7f, .0f, 2.75f), 0.3f, maroon);
+
 	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(.0f, -1.0f, .0f), white);
 
 	// Generating Camera  
-	glm::vec3 cameraPos(.0f, .0f, 0.0f);
+	glm::vec3 cameraPos(.0f, .35f, 0.0f);
 	glm::vec3 cameraForward(.0f, .0f, 1.0f);
 	glm::vec3 cameraReferUp(.0f, 1.0f, .0f);
 	glm::vec3 cameraRight(1.0f, .0f, .0f);
@@ -273,6 +276,8 @@ int main(int argc, char* argv[]) {
 	// Fill list of scene objects
 	std::vector<Object*> sceneObjects;
 	sceneObjects.push_back(&scene_sphere);
+	sceneObjects.push_back(&scene_sphere2);
+
 	sceneObjects.push_back(&plane);
 
 	// Fill Lights into a collection
@@ -322,7 +327,7 @@ int main(int argc, char* argv[]) {
 					rayOrigin + (float)intersections[closestIndex] * rayDir;
 
 				Color finalColor = getColorAt(intersectPt, rayDir, lights, 
-					sceneObjects, closestIndex, options.ambientLight);
+					sceneObjects, closestIndex, options.ambientLight, 0);
 				finalColor = finalColor.colorClip();
 				colorBuffer[x + y * options.width].r = finalColor.getColorR();
 				colorBuffer[x + y * options.width].g = finalColor.getColorG();
