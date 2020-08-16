@@ -217,7 +217,7 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 			}
 		}
 	}
-	return finalColor;
+	return finalColor.colorClip();
 }
 
 int main(int argc, char* argv[]) {
@@ -226,6 +226,10 @@ int main(int argc, char* argv[]) {
 	_CrtMemState sNew;
 	_CrtMemState sDiff;
 	_CrtMemCheckpoint(&sOld); //take a snapshot
+
+	// Anti-aliasing depth (default: 1) 
+	// (1 == 1 pixel, 2 == 4 pixel colors avged into 1)
+	int aaDepth = 5; 
 
 	std::cout << "Rendering... " << std::endl;
 	// Setting up image options
@@ -288,51 +292,137 @@ int main(int argc, char* argv[]) {
 	float alpha, beta;
 	glm::vec3 rayDir, rayOrigin;
 
+	Color* tempColor = new Color[aaDepth * aaDepth];
+	std::vector<double> tempR;
+	std::vector<double> tempG;
+	std::vector<double> tempB;
+
+	int aaIdx = 0;
+
 	for (int y = 0; y < options.height; y++) {
 		for (int x = 0; x < options.width; x++) {
-			alpha = ( (2 * (x + 0.5)/ (float)options.width) - 1.0f) 
-				* options.aspectRatio * tan(options.fov/2);
-			beta = (1 - (2 * (y + 0.5) / (float) options.height)) * tan(options.fov / 2);
-			// 
-			rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamDir());
-			rayOrigin = cameraPos;
-			Ray camRay(rayOrigin, rayDir);
-			
-			std::vector<double> intersections;
-			// store all intersection distances (even if they are negative, we'll weed
-			// them out later in findClosestObjIndeX() function)
-			for (int idx = 0; idx < sceneObjects.size(); idx++) {
-				float d = sceneObjects[idx]->findIntersection(camRay);
-				intersections.push_back(d);
+			Color finalColor;
+			// Render w/o anti-aliasing
+			if (aaDepth == 1) {
+				alpha = ((2 * (x + 0.5) / (float)options.width) - 1.0f)
+					* options.aspectRatio * tan(options.fov / 2);
+				beta = (1 - (2 * (y + 0.5) / (float)options.height)) * tan(options.fov / 2);
+ 
+				rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamDir());
+				rayOrigin = cameraPos;
+				Ray camRay(rayOrigin, rayDir);
+
+				std::vector<double> intersections;
+				// store all intersection distances (even if they are negative, we'll weed
+				// them out later in findClosestObjIndeX() function)
+				for (int idx = 0; idx < sceneObjects.size(); idx++) {
+					float d = sceneObjects[idx]->findIntersection(camRay);
+					intersections.push_back(d);
+				}
+
+				// find the index of closest object, get its color
+				int closestIndex = findClosestObjIndex(intersections);
+
+				// negative index means no intersection, use default color and
+				// move on to next pixel. 
+				// 2nd condition ensures that the intersection value shld be atleast 
+				// greater than the epsilon value T_MIN_VAL
+
+				// else, save the pixel color of the closest object (accounting for
+				// lights and shadows)
+				if (closestIndex < 0 || intersections[closestIndex] < T_MIN_VAL) {
+					continue;
+				}
+				else {
+					Object* closestObj = sceneObjects[closestIndex];
+					//Color surfaceColor = closestObj->getColor();
+					// find intersection point
+					glm::vec3 intersectPt =
+						rayOrigin + (float)intersections[closestIndex] * rayDir;
+
+					finalColor = getColorAt(intersectPt, rayDir, lights,
+						sceneObjects, closestIndex, options.ambientLight, 0);
+					finalColor = finalColor.colorClip();
+				}
 			}
-
-			// find the index of closest object, get its color
-			int closestIndex = findClosestObjIndex(intersections);
-
-			// negative index means no intersection, use default color and
-			// move on to next pixel. 
-			// 2nd condition ensures that the intersection value shld be atleast 
-			// greater than the epsilon value T_MIN_VAL
-
-			// else, save the pixel color of the closest object (accounting for
-			// lights and shadows)
-			if (closestIndex < 0 || intersections[closestIndex] < T_MIN_VAL) {
-				continue;
-			}
+			// Render with Anti-aliasing 
 			else {
-				Object* closestObj = sceneObjects[closestIndex];
-				Color surfaceColor = closestObj->getColor();
-				// find intersection point
-				glm::vec3 intersectPt = 
-					rayOrigin + (float)intersections[closestIndex] * rayDir;
+				// add another double for loop here for anti-aliasing
+				for (int aay = 0; aay < aaDepth; aay++) {
+					for (int aax = 0; aax < aaDepth; aax++) {
+						aaIdx = aax + aay * aaDepth;
+						alpha = ((2 * (x + (float)aax / ((float)aaDepth - 1) ) / (float)options.width) - 1.0f)
+							* options.aspectRatio * tan(options.fov / 2);
+						beta = (1 - (2 * (y + (float)aay / ((float)aaDepth - 1)) / (float)options.height)) * tan(options.fov / 2);
 
-				Color finalColor = getColorAt(intersectPt, rayDir, lights, 
-					sceneObjects, closestIndex, options.ambientLight, 0);
-				finalColor = finalColor.colorClip();
-				colorBuffer[x + y * options.width].r = finalColor.getColorR();
-				colorBuffer[x + y * options.width].g = finalColor.getColorG();
-				colorBuffer[x + y * options.width].b = finalColor.getColorB();
+						rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamDir());
+						rayOrigin = cameraPos;
+						Ray camRay(rayOrigin, rayDir);
+
+						std::vector<double> intersections;
+						// store all intersection distances (even if they are negative, we'll weed
+						// them out later in findClosestObjIndeX() function)
+						for (int idx = 0; idx < sceneObjects.size(); idx++) {
+							float d = sceneObjects[idx]->findIntersection(camRay);
+							intersections.push_back(d);
+						}
+
+						// find the index of closest object, get its color
+						int closestIndex = findClosestObjIndex(intersections);
+
+						// negative index means no intersection, use default color and
+						// move on to next pixel. 
+						// 2nd condition ensures that the intersection value shld be atleast 
+						// greater than the epsilon value T_MIN_VAL
+
+						// else, save the pixel color of the closest object (accounting for
+						// lights and shadows)
+						if (closestIndex < 0 || intersections[closestIndex] < T_MIN_VAL) {
+							// crazy color issue: b/c you didn't assign Color object to this element
+							// idx, instead you called setColorR/G/B on a non-existent object
+							// at index aaIdx in the tempColor array
+							tempColor[aaIdx] = Color(0.0f, 0.0f, 0.0f, 0.0f);
+							continue;
+						}
+						else {
+							Object* closestObj = sceneObjects[closestIndex];
+							//Color surfaceColor = closestObj->getColor();
+							// find intersection point
+							glm::vec3 intersectPt =
+								rayOrigin + (float)intersections[closestIndex] * rayDir;
+
+							// getColorAt returns the clipped color
+							Color tempCol = getColorAt(intersectPt, rayDir, lights,
+								sceneObjects, closestIndex, options.ambientLight, 0);
+							//tempR.push_back(tempCol.getColorR());
+							//tempG.push_back(tempCol.getColorG());
+							//tempB.push_back(tempCol.getColorB());
+							tempColor[aaIdx] = tempCol;
+						}
+					}
+				}
+
+				// average all the R,G,B components
+				double avgR = 0;
+				double avgG = 0;
+				double avgB = 0;
+				for (int k = 0; k < aaDepth * aaDepth; k++) {
+					//avgR += tempR[k];
+					//avgG += tempG[k];
+					//avgB += tempB[k];
+					avgR += tempColor[k].getColorR();
+					avgG += tempColor[k].getColorG();
+					avgB += tempColor[k].getColorB();
+				}
+				finalColor.setColorR(avgR / ((double)aaDepth * aaDepth));
+				finalColor.setColorG(avgG / ((double)aaDepth * aaDepth));
+				finalColor.setColorB(avgB / ((double)aaDepth * aaDepth));
 			}
+			
+			// apply the color to the final image
+			colorBuffer[x + y * options.width].r = finalColor.getColorR();
+			colorBuffer[x + y * options.width].g = finalColor.getColorG();
+			colorBuffer[x + y * options.width].b = finalColor.getColorB();
 			// TO-DO: cast generated rays into the scene 
 			// using a pointer to a list of Objects, call intersection function
 			// continue this url: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
