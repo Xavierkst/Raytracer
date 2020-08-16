@@ -6,7 +6,7 @@ Rendered with Anti aliasing depth 5
 Rendered without Anti-aliasing 
 ![Ray traced with no Anti-aliasing](https://github.com/Xavierkst/Raytracer_build/blob/master/testFile_no_AA.jpg)
 
-Planned implementations: 
+Upcoming features to implement: 
 * Refractions 
 * Soft Shadows 
 * Acceleration Structures (bounding volume hierarchy)
