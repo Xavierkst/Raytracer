@@ -187,7 +187,7 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 						// specularVal to a power (phong exponent) will be too 
 						// "wide" or "big", and so we narrow it down by raising power 
 						// reducing the value since its in range [0,1]
-						specularVal = pow(specularVal, 10);
+						specularVal = pow(specularVal, 25);
 						// this could be the problem, multiplying with finalColor special value
 						// instead of object's special value
 						finalColor = finalColor + sources[k]->getLightColor() * 
@@ -215,18 +215,13 @@ int main(int argc, char* argv[]) {
 	_CrtMemState sDiff;
 	_CrtMemCheckpoint(&sOld); //take a snapshot
 
-	// Anti-aliasing depth (default: 1) 
-	// (1 == 1 pixel, 2 == 4 pixel colors avged into 1)
-	int aaDepth = 1; 
-
 	std::cout << "Rendering... " << std::endl;
-	// Setting up image options
+	// Rendering image options (fov, width, height etc.)
 	Options options; 
-	options.width = 1080;
-	options.height= 720;
-	options.aspectRatio = (float)options.width / (float)options.height;
-	options.fov = M_PI * (90.0f / 180.0f); 
-	options.ambientLight = 0.2f;
+
+	// Anti-aliasing depth (default: 1) 
+	// 1 pixel, 4 pixels, 9 etc.
+	int aaDepth = 1;
 
 	// Record rendering time elapsed
 	clock_t t1, t2; 
@@ -236,12 +231,6 @@ int main(int argc, char* argv[]) {
 	Color* colorBuffer = new Color[options.width*options.height];
 	for (int i = 0; i < options.width*options.height; i++) {
 		colorBuffer[i] = Color(.0f, .0f, .0f, 1.0f);
-		////colorBuffer[i].setColorR(0.0f);
-		////colorBuffer[i].setColorG(0.0f);
-		////colorBuffer[i].setColorB(0.0f);
-		//colorBuffer[i].setColorR(0.0f);
-		//colorBuffer[i].setColorR(0.0f);
-		//colorBuffer[i].setColorR(0.0f);
 	}
 
 	// Colors
@@ -269,23 +258,23 @@ int main(int argc, char* argv[]) {
 	glm::vec3 cameraRight(1.0f, .0f, .0f);
 	Camera cam(cameraPos, cameraForward, cameraReferUp);
 
-	// Fill list of scene objects
+	// Populate scene objects
 	std::vector<Object*> sceneObjects;
 	sceneObjects.push_back(&scene_sphere);
 	sceneObjects.push_back(&scene_sphere2);
 
 	sceneObjects.push_back(&plane);
 
-	// Fill Lights into a collection
+	// Populate Lights vector
 	std::vector<LightSources*> lights; 
 	lights.push_back(&theLight);
 
-	// world space to screen space
 	float alpha, beta;
 	glm::vec3 rayDir, rayOrigin;
-
+	// anti aliasing color buffer
 	Color* tempColor = new Color[aaDepth * aaDepth]; 
 	int aaIdx = 0; // anti aliasing index
+
 	for (int y = 0; y < options.height; y++) {
 		for (int x = 0; x < options.width; x++) {
 			Color finalColor;
@@ -297,7 +286,7 @@ int main(int argc, char* argv[]) {
 					* tan(options.fov / 2);
 				rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamLookAt());
 				rayOrigin = cameraPos;
-				Ray camRay(rayOrigin, rayDir);
+				Ray camRay(rayOrigin, rayDir); // generate cam ray
 
 				// store all intersection distances (even if they are negative, we'll weed
 				// them out later in findClosestObjIndeX() function)

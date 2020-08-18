@@ -14,7 +14,7 @@ public:
 	glm::vec3 getCamLookAt();
 	glm::vec3 getCamUp();
 	glm::vec3 getCamRight();
-	Ray generateCamRay(glm::vec3 camPos, glm::vec3 camDir);
+
 	Camera();
 	Camera(glm::vec3 pos, glm::vec3 target, glm::vec3 referUp);
 private:

@@ -30,9 +30,3 @@ glm::vec3 Camera::getCamUp() {
 glm::vec3 Camera::getCamRight() {
 	return this->right;
 }
-
-Ray Camera::generateCamRay(glm::vec3 camPos, glm::vec3 camDir)
-{
-	Ray cam(camPos, normalize(camDir));
-	return cam;
-}
