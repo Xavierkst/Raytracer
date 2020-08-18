@@ -1,4 +1,3 @@
-#pragma once
 #ifndef _RAY_H
 #define _RAY_H
 
@@ -18,6 +17,7 @@ private:
 public:
 	glm::vec3 getRayOrig();
 	glm::vec3 getRayDir();
+
 	Ray();
 	// Constructor for a ray 
 	Ray(glm::vec3 origin, glm::vec3 direction);

@@ -18,7 +18,9 @@
 #include "Plane.h"
 #include "Ray.h"
 #include "Object.h"
+#include "Options.h"
 #include "time.h"
+
 
 #define MAX_RECURSION_DEPTH 1
 
@@ -27,34 +29,20 @@
 #include <stdlib.h>  
 #include <crtdbg.h>   //for malloc and free
 
-struct RGBColor {
-	double r, g, b; 
-};
 
-struct Options {
-	int width;
-	int height;
-
-	float fov;
-	float aspectRatio;
-	float ambientLight;
-	glm::vec3 backgroundColor;
-	uint8_t maxDepth;
-};
-
-void writeImage(std::string fileName, float exposure, float gamma, RGBColor* pixelData, int width, int height) {
+void writeImage(std::string fileName, float exposure, float gamma, Color* pixelData, int width, int height) {
 	std::vector<unsigned char> imageData(width * height * 4);
 
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
-			RGBColor pixelColor = pixelData[x + y * width];
+			Color pixelColor = pixelData[x + y * width];
 			/*pixelColor.gammaCorrection(exposure, gamma);
 			pixelColor.clamp();*/
 
 			int index = 4 * (x + y * width);
-			imageData[index + 0] = (unsigned char)(pixelColor.r * 255.0f);
-			imageData[index + 1] = (unsigned char)(pixelColor.g * 255.0f);
-			imageData[index + 2] = (unsigned char)(pixelColor.b * 255.0f);
+			imageData[index + 0] = (unsigned char)(pixelColor.getColorR() * 255.0f);
+			imageData[index + 1] = (unsigned char)(pixelColor.getColorG() * 255.0f);
+			imageData[index + 2] = (unsigned char)(pixelColor.getColorB() * 255.0f);
 			imageData[index + 3] = 255; // alpha channel
 		}
 	}
@@ -115,7 +103,7 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 	// Sum up their surface color contributions with the primary object's 
 	// surface color (recursively call getColorAt() again) 
 	
-	// check if object has a shiny/glossy property (means has reflections)
+	// check if object has a shiny/glossy property (i.e. surface is reflective)
 	// i.e. specialValue in range [0,1]
 	if (objects[closestIdx]->getColor().getColorSpecial() > 0.0f &&
 		objects[closestIdx]->getColor().getColorSpecial() <= 1.0f && reflectionDepth < MAX_RECURSION_DEPTH) {
@@ -132,7 +120,9 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 		// if closest reflected Object index is not -1, the reflected ray
 		// hit an object. So we sample the color of the object
 		if (closestRefObjIdx != -1) {
-			glm::vec3 ref_intersect_pt = intersectionPos + reflectionDir * (float)reflectionArr[closestRefObjIdx];
+			glm::vec3 ref_intersect_pt = intersectionPos + reflectionDir * 
+				(float)reflectionArr[closestRefObjIdx];
+
 			finalColor = finalColor + getColorAt(ref_intersect_pt, reflectionDir,
 				sources, objects, closestRefObjIdx, ambientLightConst, ++reflectionDepth) *
 				objects[closestIdx]->getColor().getColorSpecial();
@@ -148,9 +138,8 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 		// surface color and light color
 		float cos_theta = dot(objects[closestIdx]->getNormal(intersectionPos), lightDir);
 
-		// when angle between normal and light dir is at most 90 deg, light
-		// hits the surface, so we attempt to trace to light source. Else, no light 
-		// hits it, we darken it with a scalar multip?..
+		// when angle between normal and light dir is within 90 deg, 
+		// surface is illuminated, so we attempt to trace to light source. 
 		if (cos_theta > 0) {
 			//bool shadowed = false;
 			// find distance from intersection pt to light source
@@ -168,14 +157,14 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 				intersectionArr.push_back(d);
 			}
 
-			// TEST FOR SHADOWS --
+			// TEST FOR SHADOWS -- 2ndary Intersections 
 			// check if any object intersects with secondary ray:
 			int closestObjIdx = findClosestObjIndex(intersectionArr);
 			
 			if (closestObjIdx < 0) {
-				// NO intersection occured--light is not blocked!
-				// add light value to it:
-				// sufaceColor * LightColor * dot prod bet. surface normal & light dir
+				// if NO intersection occured--light is not blocked
+				// Do Lambertian (diffuse) shading:
+				// pixel Color = sufaceColor (Kd) * LightColor (I) * dot(Normal, lightDir)
 				// Note: closestIdx is the idx of the closest object we hit that we are generating
 				// shadow rays from, directed towards the light --> closestIdx != closestObjIdx
 				// IMPT: the algorithm we use to do intersection test assumes the light to be 
@@ -184,29 +173,28 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 				// generate shadow on the primary object
 				finalColor = finalColor + objects[closestIdx]->getColor() * 
 					sources[k]->getLightColor() * cos_theta;
-				
-				// account for specular (shininess of object)
-				// if material is shiny (has special component -- note shiny is in range [0,1])
-				// any value beyond is not considered shiny
 
-			/*	if (finalColor.getColorSpecial() > 0.0f && 
-					finalColor.getColorSpecial() <= 1.0f) 
-				*/
+				// The object surface has a specular component (shininess) to it
+				// i.e. material is shiny (has special component -- note shiny is in range [0,1]
 				if (objects[closestIdx]->getColor().getColorSpecial() > 0.0f &&
 					objects[closestIdx]->getColor().getColorSpecial() <= 1.0f) {
-					/*glm::vec3 scalar = 2.0f * (intersectingRayDir +
-						objectNormal * dot(intersectingRayDir, objectNormal));
-					glm::vec3 reflectionDir = normalize(-intersectingRayDir + scalar);*/
-
 					glm::vec3 scalar = 2.0f * objectNormal * dot(lightDir, objectNormal);
 					glm::vec3 reflectionDir = normalize(scalar - lightDir);
 					// negative of intersectingRayDir == viewDir
 					double specularVal = dot(reflectionDir, -intersectingRayDir);
 					if (specularVal > 0.0f) {
-						// not sure why raised to the 10
+						// In actuality, the highlights produced without raising
+						// specularVal to a power (phong exponent) will be too 
+						// "wide" or "big", and so we narrow it down by raising power 
+						// reducing the value since its in range [0,1]
 						specularVal = pow(specularVal, 10);
+						// this could be the problem, multiplying with finalColor special value
+						// instead of object's special value
 						finalColor = finalColor + sources[k]->getLightColor() * 
 							specularVal * finalColor.getColorSpecial();
+						// Note: getColorSpecial is the specular coefficient, Ks 
+						//finalColor = finalColor + sources[k]->getLightColor() *
+						//	specularVal * objects[closestIdx]->getColor().getColorSpecial();
 					}
 				}
 			}
@@ -229,7 +217,7 @@ int main(int argc, char* argv[]) {
 
 	// Anti-aliasing depth (default: 1) 
 	// (1 == 1 pixel, 2 == 4 pixel colors avged into 1)
-	int aaDepth = 5; 
+	int aaDepth = 1; 
 
 	std::cout << "Rendering... " << std::endl;
 	// Setting up image options
@@ -240,16 +228,20 @@ int main(int argc, char* argv[]) {
 	options.fov = M_PI * (90.0f / 180.0f); 
 	options.ambientLight = 0.2f;
 
-	// include time
+	// Record rendering time elapsed
 	clock_t t1, t2; 
 	t1 = clock();
 
-	// initializing all pixels to default value (color buffer)
-	RGBColor* colorBuffer = new RGBColor[options.width*options.height];
+	// initializing all pixels in frame buffer to default value 
+	Color* colorBuffer = new Color[options.width*options.height];
 	for (int i = 0; i < options.width*options.height; i++) {
-		colorBuffer[i].r = 0.0f;
-		colorBuffer[i].g = 0.0f;
-		colorBuffer[i].b = 0.0f;
+		colorBuffer[i] = Color(.0f, .0f, .0f, 1.0f);
+		////colorBuffer[i].setColorR(0.0f);
+		////colorBuffer[i].setColorG(0.0f);
+		////colorBuffer[i].setColorB(0.0f);
+		//colorBuffer[i].setColorR(0.0f);
+		//colorBuffer[i].setColorR(0.0f);
+		//colorBuffer[i].setColorR(0.0f);
 	}
 
 	// Colors
@@ -292,13 +284,8 @@ int main(int argc, char* argv[]) {
 	float alpha, beta;
 	glm::vec3 rayDir, rayOrigin;
 
-	Color* tempColor = new Color[aaDepth * aaDepth];
-	std::vector<double> tempR;
-	std::vector<double> tempG;
-	std::vector<double> tempB;
-
-	int aaIdx = 0;
-
+	Color* tempColor = new Color[aaDepth * aaDepth]; 
+	int aaIdx = 0; // anti aliasing index
 	for (int y = 0; y < options.height; y++) {
 		for (int x = 0; x < options.width; x++) {
 			Color finalColor;
@@ -306,15 +293,15 @@ int main(int argc, char* argv[]) {
 			if (aaDepth == 1) {
 				alpha = ((2 * (x + 0.5) / (float)options.width) - 1.0f)
 					* options.aspectRatio * tan(options.fov / 2);
-				beta = (1 - (2 * (y + 0.5) / (float)options.height)) * tan(options.fov / 2);
- 
-				rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamDir());
+				beta = (1 - (2 * (y + 0.5) / (float)options.height)) 
+					* tan(options.fov / 2);
+				rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamLookAt());
 				rayOrigin = cameraPos;
 				Ray camRay(rayOrigin, rayDir);
 
-				std::vector<double> intersections;
 				// store all intersection distances (even if they are negative, we'll weed
 				// them out later in findClosestObjIndeX() function)
+				std::vector<double> intersections;
 				for (int idx = 0; idx < sceneObjects.size(); idx++) {
 					float d = sceneObjects[idx]->findIntersection(camRay);
 					intersections.push_back(d);
@@ -354,10 +341,9 @@ int main(int argc, char* argv[]) {
 						alpha = ((2 * (x + (float)aax / ((float)aaDepth - 1) ) / (float)options.width) - 1.0f)
 							* options.aspectRatio * tan(options.fov / 2);
 						beta = (1 - (2 * (y + (float)aay / ((float)aaDepth - 1)) / (float)options.height)) * tan(options.fov / 2);
-
-						rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamDir());
+						
 						rayOrigin = cameraPos;
-						Ray camRay(rayOrigin, rayDir);
+						Ray camRay(rayOrigin, normalize(glm::vec3(alpha, beta, 0.0f) + cam.getCamLookAt()));
 
 						std::vector<double> intersections;
 						// store all intersection distances (even if they are negative, we'll weed
@@ -394,9 +380,6 @@ int main(int argc, char* argv[]) {
 							// getColorAt returns the clipped color
 							Color tempCol = getColorAt(intersectPt, rayDir, lights,
 								sceneObjects, closestIndex, options.ambientLight, 0);
-							//tempR.push_back(tempCol.getColorR());
-							//tempG.push_back(tempCol.getColorG());
-							//tempB.push_back(tempCol.getColorB());
 							tempColor[aaIdx] = tempCol;
 						}
 					}
@@ -407,9 +390,6 @@ int main(int argc, char* argv[]) {
 				double avgG = 0;
 				double avgB = 0;
 				for (int k = 0; k < aaDepth * aaDepth; k++) {
-					//avgR += tempR[k];
-					//avgG += tempG[k];
-					//avgB += tempB[k];
 					avgR += tempColor[k].getColorR();
 					avgG += tempColor[k].getColorG();
 					avgB += tempColor[k].getColorB();
@@ -420,12 +400,9 @@ int main(int argc, char* argv[]) {
 			}
 			
 			// apply the color to the final image
-			colorBuffer[x + y * options.width].r = finalColor.getColorR();
-			colorBuffer[x + y * options.width].g = finalColor.getColorG();
-			colorBuffer[x + y * options.width].b = finalColor.getColorB();
-			// TO-DO: cast generated rays into the scene 
-			// using a pointer to a list of Objects, call intersection function
-			// continue this url: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays
+			colorBuffer[x + y * options.width].setColorR(finalColor.getColorR());
+			colorBuffer[x + y * options.width].setColorG(finalColor.getColorG());
+			colorBuffer[x + y * options.width].setColorB(finalColor.getColorB());
 		}
 	}
 
@@ -435,6 +412,7 @@ int main(int argc, char* argv[]) {
 	std::cout << "Render time: " << (float)(t2 - t1) / 1000.0f << " seconds" << std::endl;
 	// Free memory
 	delete[] colorBuffer;
+	delete[] tempColor;
 	while (!sceneObjects.empty()) {
 		sceneObjects.pop_back();
 	}
