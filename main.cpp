@@ -279,7 +279,7 @@ int main(int argc, char* argv[]) {
 		for (int x = 0; x < options.width; x++) {
 			Color finalColor;
 			// Render w/o anti-aliasing
-			if (aaDepth == 1) { // test
+			if (aaDepth == 1) { // test 123
 				alpha = ((2 * (x + 0.5) / (float)options.width) - 1.0f)
 					* options.aspectRatio * tan(options.fov / 2);
 				beta = (1 - (2 * (y + 0.5) / (float)options.height)) 
