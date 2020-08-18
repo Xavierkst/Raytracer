@@ -16,7 +16,7 @@ public:
 	Light();
 	Light(glm::vec3 light_position, Color light_color);
 
-	//virtual glm::vec3 getLightDir(); 1
+	//virtual glm::vec3 getLightDir();
 	glm::vec3 getLightPos();
 	Color getLightColor();
 
