@@ -9,7 +9,7 @@ public:
 	Color();
 	Color(float r, float g, float b, float special);
 
-	// Color getters
+	// Color getters 1
 	double getColorR();
 	double getColorG();
 	double getColorB();

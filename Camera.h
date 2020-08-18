@@ -9,7 +9,7 @@
 class Camera {
 public:
 	// camera has a: pos, lookAt, Up, 
-	// looking in the -Z direction? 
+	// looking in the -Z direction? 1
 	glm::vec3 getCamPos();
 	glm::vec3 getCamLookAt();
 	glm::vec3 getCamUp();
