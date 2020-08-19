@@ -4,7 +4,6 @@ Plane::Plane() {
 	this->normal = glm::vec3(1.0f, 0.0f, 0.0f);
 	this->color = Color(.5f, .5f, .5f, 0);
 	this->center = glm::vec3(.0f);
-	this->material = DIFFUSE;
 }
 
 Plane::Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor, materialType mat) {
@@ -14,19 +13,19 @@ Plane::Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor, materialType
 	this->material = mat;
 }
 
-double Plane::findIntersection(Ray ray) {
+bool Plane::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear, int& index, glm::vec2& uv) const {
 	double t = FLT_MAX;
 
 	// Check if ray is || to plane 
 	// i.e Denominator == 0
-	float denom = dot(ray.getRayDir(), this->normal);
+	float denom = dot(dir, this->normal);
 	if (denom == 0) {
 		return -1.0f;
 	}
 
 	// this->center is the "center" of the plane, 
 	// i.e. an Abitrary pt A on the plane
-	float numer = dot(this->center - ray.getRayOrig(), this->normal);
+	float numer = dot(this->center - dir, this->normal);
 	t = numer / denom;
 	
 	// check distance is within bounds
@@ -36,6 +35,14 @@ double Plane::findIntersection(Ray ray) {
 	}
 
 	return t;
+}
+
+void Plane::getSurfaceProperties(const glm::vec3& P, 
+	const glm::vec3& I, const int& index, 
+	const glm::vec2& uv, glm::vec3& N, 
+	glm::vec2& st)
+{	
+	N = normal;
 }
 
 materialType Plane::getMaterialType()

@@ -16,6 +16,7 @@ public:
 	glm::vec3 backgroundColor;
 	uint8_t maxDepth;
 	
+	float bias;
 	// default constructor
 	Options() {
 		width = 1080;
@@ -23,6 +24,7 @@ public:
 		aspectRatio = (float)width / (float)height;
 		fov = M_PI * (90.0f / 180.0f);
 		ambientLight = 0.2f;
+		bias = 0.001f;
 	}
 };
 #endif 
