@@ -14,17 +14,17 @@ private:
 	Color color;
 	// distance of the plane's center from world origin
 	glm::vec3 center;
+	materialType material;
 public:
 	Plane();
-	Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor);
+	Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor, materialType mat);
 
 	glm::vec3 getNormal(glm::vec3 point);
 	Color getColor();
 	void setColor(float r, float g, float b);
-
 	glm::vec3 getPlaneCenter(); 
-	
 	double findIntersection(Ray ray);
+	materialType getMaterialType();
 };
 
 #endif

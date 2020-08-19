@@ -11,11 +11,12 @@ class Sphere : public Object {
 private:
 	float radius;
 	glm::vec3 sphereOrig;
-	Color color; 
+	Color color;
+	materialType material;
 public:
 
 	Sphere();
-	Sphere(glm::vec3 origin, float r, Color c);
+	Sphere(glm::vec3 origin, float r, Color c, materialType mat);
 
 	glm::vec3 getSpherePos();
 	Color getColor();
@@ -24,6 +25,8 @@ public:
 	glm::vec3 getNormal(glm::vec3 point);
 	double findIntersection(Ray ray);
 	double calcDistance(float a, float b, float c);
+
+	materialType getMaterialType();
 };
 
 #endif

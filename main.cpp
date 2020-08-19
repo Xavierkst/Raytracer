@@ -78,7 +78,7 @@ int findClosestObjIndex(std::vector<double>& intersections) {
 // intersectingRayDir i.e. opposite of viewDirection V 
 // view direction V points from the object to eye
 Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
-	std::vector<LightSources*>& sources, std::vector<Object*> objects,
+	std::vector<LightSources*>& sources, std::vector<Object*>& objects,
 	int closestIdx, float ambientLightConst, int reflectionDepth) {
 
 
@@ -208,6 +208,75 @@ Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
 	return finalColor.colorClip();
 }
 
+Color castRay(const glm::vec3& orig, const glm::vec3& dir,
+	const std::vector<LightSources*>& sources,
+	const std::vector<Object*>& objects,
+	const Options opts,
+	uint32_t depth) {
+	Color hitColor;
+	// check whether depth is greater than maxDepth
+	if (depth > MAX_RECURSION_DEPTH) {
+		return hitColor = Color(.0f, .0f, .0f, .0f);
+	}
+	int objIndex; 
+
+	glm::vec2 uv; // not sure what it is
+	Object* hitObj = nullptr;
+	float tNear = FLT_MAX;
+	// hitObj->getSurfaceProperties
+	// carry out intersection test
+	if (trace(orig, dir, objects, tNear, objIndex, uv, hitObj)) {
+		glm::vec3 hitPoint = orig + dir * tNear;;
+		glm::vec3 N; // normal
+		glm::vec3 tmp = hitPoint;
+		glm::vec2 st; // not sure what it is
+		// hitObj->getSurfaceProperties(hitPoint, dir, N, uv);
+
+
+		switch (hitObj->getMaterialType()) {
+			case REFLECTION: {
+				float kr;
+				// fresnel 
+
+				break;
+			}
+
+			default: {
+
+			}
+		}
+	}
+
+}
+
+bool trace(glm::vec3 orig, glm::vec3 dir, 
+	const std::vector<Object*>& objects, 
+	float& tNear, int& objIndex, 
+	glm::vec2& uv, Object** hitObject) {
+	
+	*hitObject = nullptr;
+	int indexK; 
+	glm::vec2 uvK;
+	// iterate thru object vector and call intersect on each
+	// object 
+	for (int k = 0; k < objects.size(); k++) {
+		float tCurrNearest = FLT_MAX;
+		// intersect will output tCurrNearest 
+		// (has freedom to use index k and vector uv also)
+		if (objects[k]->intersect(orig, dir, tCurrNearest, indexK, uvK)
+			&& tCurrNearest < tNear) {
+			tNear = tCurrNearest;
+			objIndex = indexK;
+			*hitObject = objects[k];
+			uv = uvK;
+		}
+	}
+	// if object was hit by ray during intersect test -- returns true
+	return (*hitObject != nullptr); 
+
+}
+
+
 int main(int argc, char* argv[]) {
 	// checking for memory leaks
 	_CrtMemState sOld;
@@ -246,10 +315,10 @@ int main(int argc, char* argv[]) {
 	Light theLight(glm::vec3(-7.0f, 5.0f, -3.0f), whiteLight);
 
 	// Objects
-	Sphere scene_sphere(glm::vec3(.0f, .0f, 3.0f), 1.0f, prettyGreen);
-	Sphere scene_sphere2(glm::vec3(1.7f, .0f, 2.75f), 0.3f, maroon);
+	Sphere scene_sphere(glm::vec3(.0f, .0f, 3.0f), 1.0f, prettyGreen, DIFFUSE_AND_GLOSSY);
+	Sphere scene_sphere2(glm::vec3(1.7f, .0f, 2.75f), 0.3f, maroon, DIFFUSE_AND_GLOSSY);
 
-	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(.0f, -1.0f, .0f), white);
+	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(.0f, -1.0f, .0f), white, DIFFUSE);
 
 	// Generating Camera  
 	glm::vec3 cameraPos(.0f, .35f, 0.0f);
@@ -287,6 +356,12 @@ int main(int argc, char* argv[]) {
 				rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamLookAt());
 				rayOrigin = cameraPos;
 				Ray camRay(rayOrigin, rayDir); // generate cam ray
+
+				// pixel color cast ray function starts here
+				Color pixelColor;
+				// castRay function (replaces the getColor() function)
+				castRay(rayOrigin, rayDir, sceneObjects, lights, options, depth);
+
 
 				// store all intersection distances (even if they are negative, we'll weed
 				// them out later in findClosestObjIndeX() function)

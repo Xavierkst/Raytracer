@@ -4,12 +4,14 @@ Plane::Plane() {
 	this->normal = glm::vec3(1.0f, 0.0f, 0.0f);
 	this->color = Color(.5f, .5f, .5f, 0);
 	this->center = glm::vec3(.0f);
+	this->material = DIFFUSE;
 }
 
-Plane::Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor) {
+Plane::Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor, materialType mat) {
 	this->normal = normalize(normal);
 	this->color = pColor;
 	this->center = planeCenter;
+	this->material = mat;
 }
 
 double Plane::findIntersection(Ray ray) {
@@ -34,6 +36,11 @@ double Plane::findIntersection(Ray ray) {
 	}
 
 	return t;
+}
+
+materialType Plane::getMaterialType()
+{
+	return material;
 }
 
 glm::vec3 Plane::getNormal(glm::vec3 point) {

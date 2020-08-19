@@ -1,9 +1,6 @@
 #include "Object.h"
 
 double Object::findIntersection(Ray ray) {
-	//double distance = FLT_MAX;
-
-	// iterate through each item 
 	return 0.0f;
 }
 
@@ -15,7 +12,10 @@ void Object::setColor(float r, float g, float b) {
 	// empty body
 }
 
-glm::vec3 Object::getNormal(glm::vec3 point)
-{
+glm::vec3 Object::getNormal(glm::vec3 point) {
 	return glm::vec3(.0f);
+}
+
+materialType Object::getMaterialType() {
+	// empty body
 }

@@ -4,12 +4,14 @@ Sphere::Sphere() {
 	radius = 1.0f;
 	sphereOrig = glm::vec3(0.0f, 1.0f, 5.0f);
 	color = Color(0.5f, .5f, .5f, 0);
+	material = DIFFUSE_AND_GLOSSY;
 }
 
-Sphere::Sphere(glm::vec3 origin, float r, Color c) {
+Sphere::Sphere(glm::vec3 origin, float r, Color c, materialType mat) {
 	radius = r;
 	sphereOrig = origin;
 	color = c;
+	material = mat;
 }
 
 glm::vec3 Sphere::getSpherePos() {
@@ -73,5 +75,9 @@ double Sphere::calcDistance(float a, float b, float c) {
 	else
 		// Ray misses entirely, return -1
 		return -1.0f;
+}
+
+materialType Sphere::getMaterialType() {
+	return material;
 }
 
