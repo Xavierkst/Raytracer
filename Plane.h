@@ -14,6 +14,7 @@ private:
 	Color color;
 	// distance of the plane's center from world origin
 	glm::vec3 center;
+
 public:
 	Plane();
 	Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor, materialType mat);

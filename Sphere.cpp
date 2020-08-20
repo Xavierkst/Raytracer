@@ -41,6 +41,9 @@ void Sphere::getSurfaceProperties(const glm::vec3& P, const glm::vec3& I, const 
 	N = normalize(P - getSpherePos());
 }
 
+// returns true if this particular object/surface is
+// intersected. 
+// Stores distance from origin to hitpoint in tNear
 bool Sphere::findIntersection(glm::vec3 orig, 
 	glm::vec3 dir, float& tNear, 
 	int& index, glm::vec2& uv) const {

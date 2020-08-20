@@ -23,6 +23,8 @@ public:
 	float getSphereRadius();
 	glm::vec3 getNormal(glm::vec3 point);
 
+	// Calculates the normal at the intersection point of 
+	// the surface and stores in N--the normal (other variables unused)
 	void getSurfaceProperties(const glm::vec3& P,
 		const glm::vec3& I, const int& index,
 		const glm::vec2& uv, glm::vec3& N,
