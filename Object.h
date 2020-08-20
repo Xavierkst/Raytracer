@@ -36,7 +36,6 @@ public:
 
 	virtual materialType getMaterialType();
 
-	virtual ~Object();
 };
 
 #endif

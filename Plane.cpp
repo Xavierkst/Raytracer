@@ -14,27 +14,18 @@ Plane::Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor, materialType
 }
 
 bool Plane::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear, int& index, glm::vec2& uv) const {
-	double t = FLT_MAX;
-
 	// Check if ray is || to plane 
 	// i.e Denominator == 0
 	float denom = dot(dir, this->normal);
-	if (denom == 0) {
-		return -1.0f;
+	if ( fabsf(denom) < 0.0001f) {
+		return false;
 	}
 
 	// this->center is the "center" of the plane, 
 	// i.e. an Abitrary pt A on the plane
-	float numer = dot(this->center - dir, this->normal);
-	t = numer / denom;
-	
-	// check distance is within bounds
-	// Also prevents Shadow Acne
-	if (t <= T_MIN_VAL || t >= T_MAX_VAL) {
-		return -1.0f;
-	}
-
-	return t;
+	float numer = dot(this->center - orig, this->normal);
+	tNear = numer / denom;
+	return (tNear >= 0.0001f);
 }
 
 void Plane::getSurfaceProperties(const glm::vec3& P, 

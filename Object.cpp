@@ -2,7 +2,7 @@
 
 
 Object::Object() : ior(1.3f), material(DIFFUSE_AND_GLOSSY), 
-	kd(0.2f), ks(0.2f), phongExponent(25)
+	kd(0.8f), ks(0.4f), phongExponent(20)
 {
 }
 
@@ -34,4 +34,5 @@ void Object::getSurfaceProperties(const glm::vec3& P,
 
 materialType Object::getMaterialType() {
 	// empty body
+	return DIFFUSE;
 }

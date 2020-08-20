@@ -22,7 +22,7 @@
 #include "time.h"
 
 
-#define MAX_RECURSION_DEPTH 1
+#define MAX_RECURSION_DEPTH 2
 #define STARTING_DEPTH 0
 
 #include "windows.h"
@@ -30,6 +30,13 @@
 #include <stdlib.h>  
 #include <crtdbg.h>   //for malloc and free
 
+
+bool trace(glm::vec3 orig, glm::vec3 dir,
+	const std::vector<Object*>& objects,
+	float& tNear, int& objIndex,
+	glm::vec2& uv, Object** hitObject);
+
+float clamp(const float& lo, const float& hi, const float& v);
 
 void writeImage(std::string fileName, float exposure, float gamma, Color* pixelData, int width, int height) {
 	std::vector<unsigned char> imageData(width * height * 4);
@@ -268,7 +275,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 		glm::vec2 st; // for triangle meshes
 
 			// set floor tiles to be checkered
-		if (hitObj->getColor().getColorSpecial() == 2.0f) {
+		if (hitObj->getColor().getColorSpecial() == 2.0f ) {
 
 			int squareTile = floor(hitPoint.x) + floor(hitPoint.z);
 			if (squareTile % 2 == 0) {
@@ -287,7 +294,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 
 		switch (hitObj->getMaterialType()) {
 			case REFLECTION: { // object is perfectly a mirror
-				float kr;
+				float kr = .0f;
 				// fresnel -- sets the normal, and sets Kr (reflect ratio)
 				computeFresnel(dir, N, objects[objIndex]->ior, kr);
 				
@@ -301,13 +308,13 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 					hitPoint + N*opts.bias;
 				// make recursive call to castRay function to sample the color of 
 				// the reflected ray cast out from the hitPoint 
-				hitColor = castRay(hitPoint, reflection_dir, sources, objects, opts, ++depth);
+				hitColor = hitColor + castRay(hitPoint, reflection_dir, sources, objects, opts, ++depth);
 				break;
 			}
 			// default is DIFFUSE_AND_GLOSSY material
 			// compute Lambertian (diffuse) and Phong shading		
 			default: { 
-				float kd;
+	
 				// iterate thru each light source and sum their contribution
 				// kd (diffuse color) * I (light intensity) * dot(N, l) +
 				// Ks * I * pow(dot(h, N), phongExponent);
@@ -323,25 +330,29 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 					// squared distance from hit point to light source
 					float light_distance_sq = dot(light_dir, light_dir); 
 					light_dir = normalize(light_dir);
+
 					// trace rays back to lightsource and do intersection tests:
 					// If an object intersected by shadow ray, and the object's is closer
 					// to the shadowOrigin than the light, the region will be in shadow
 					bool inShadow = trace(shadowOrigPoint, light_dir, objects, 
 						tShadowNear, objIndex, uv, &shadowObj) && (tShadowNear * tShadowNear) < light_distance_sq;
-					// (1- inShadow) checks if i-th light being blocked by an object
+
 
 					// calculate diffuse contribution
-					sumDiffuse = sumDiffuse + sources[i]->getLightColor()* 
-						max(0.0f, dot(N, light_dir)) * (1 - inShadow);
+					// not sure why you need to include the surface color in this equation
+					// (1- inShadow) checks if i-th light being blocked by an object
+					sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
+						max(0.0f, dot(N, light_dir)) * ((double)1 - inShadow);
 
 					// calculate specular contribution
 					glm::vec3 scalar = 2.0f * N * dot(light_dir, N);
 					glm::vec3 reflectionDir = normalize(scalar - light_dir);
 					sumSpecular = sumSpecular + sources[i]->getLightColor() * 
 						pow( max(0.0f, dot(reflectionDir, -dir)), hitObj->phongExponent) * 
-						(1 - inShadow);
+						((double)1 - inShadow);
 				}
-				hitColor = hitColor + sumDiffuse * objects[objIndex]->kd + sumSpecular * objects[objIndex]->ks;
+				hitColor = hitColor + sumDiffuse * hitObj->getColor() * 
+					hitObj->kd + sumSpecular * hitObj->ks;
 				break;
 			}
 		}
@@ -351,7 +362,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 		return hitColor = Color(.0f, .0f, .0f, .0f);
 	}
 
-	return hitColor;
+	return hitColor.colorClip();
 }
 
 // Checks if the ray intersects with any of the 
@@ -374,8 +385,12 @@ bool trace(glm::vec3 orig, glm::vec3 dir,
 	// iterate thru object vector and call intersect on each
 	// object, replace saved values with those of the closest obj 
 	for (int k = 0; k < objects.size(); k++) {
+		
 		// intersect will output tCurrNearest 
 		// (has freedom to use index k and vector uv also)
+		//if (objects[k]->getColor().getColorSpecial() == 2.0f) {
+		//	float five = 5.0f;
+		//}
 		if (objects[k]->findIntersection(orig, dir, tCurrNearest, indexK, uvK)
 			&& tCurrNearest < tNear) {
 			tNear = tCurrNearest;
@@ -424,17 +439,17 @@ int main(int argc, char* argv[]) {
 	Color black(.0f, .0f, .0f, .0f);
 
 	// Lights
-	Light theLight(glm::vec3(-7.0f, 5.0f, -3.0f), whiteLight);
+	Light theLight(glm::vec3(-7.0f, 5.0f, 3.0f), whiteLight);
 
 	// Objects
-	Sphere scene_sphere(glm::vec3(.0f, .0f, 3.0f), 1.0f, prettyGreen, DIFFUSE_AND_GLOSSY);
-	Sphere scene_sphere2(glm::vec3(1.7f, .0f, 2.75f), 0.3f, maroon, DIFFUSE_AND_GLOSSY);
+	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f, prettyGreen, DIFFUSE_AND_GLOSSY);
+	Sphere scene_sphere2(glm::vec3(1.7f, -.7f, -2.80f), 0.3f, maroon, DIFFUSE_AND_GLOSSY);
 
-	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(.0f, -1.0f, .0f), white, DIFFUSE);
+	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(.0f, -1.0f, .0f), white, DIFFUSE_AND_GLOSSY);
 
 	// Generating Camera  
 	glm::vec3 cameraPos(.0f, .35f, 0.0f);
-	glm::vec3 cameraForward(.0f, .0f, 1.0f);
+	glm::vec3 cameraForward(.0f, .0f, -1.0f);
 	glm::vec3 cameraReferUp(.0f, 1.0f, .0f);
 	glm::vec3 cameraRight(1.0f, .0f, .0f);
 	Camera cam(cameraPos, cameraForward, cameraReferUp);
@@ -487,9 +502,9 @@ int main(int argc, char* argv[]) {
 						rayOrigin = cameraPos;
 						Ray camRay(rayOrigin, normalize(glm::vec3(alpha, beta, 0.0f) + cam.getCamLookAt()));
 
-							// getColorAt returns the clipped color
-							Color tempCol = castRay(rayOrigin, rayDir, lights, sceneObjects, options, STARTING_DEPTH);
-							tempColor[aaIdx] = tempCol;
+						// getColorAt returns the clipped color
+						Color tempCol = castRay(rayOrigin, rayDir, lights, sceneObjects, options, STARTING_DEPTH);
+						tempColor[aaIdx] = tempCol;
 					}
 				}
 
