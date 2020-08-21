@@ -24,7 +24,7 @@ public:
 		aspectRatio = (float)width / (float)height;
 		fov = M_PI * (90.0f / 180.0f);
 		ambientLight = 0.4f;
-		bias = 0.001f;
+		bias = 0.01f;
 	}
 };
 #endif 

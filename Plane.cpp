@@ -1,5 +1,5 @@
 #include "Plane.h"
-
+#include <iostream>
 Plane::Plane() {
 	this->normal = glm::vec3(1.0f, 0.0f, 0.0f);
 	this->color = Color(.5f, .5f, .5f, 0);
@@ -20,12 +20,15 @@ bool Plane::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear, int& i
 	if ( fabsf(denom) < 0.0001f) {
 		return false;
 	}
+	//if (denom < 0.0f) std::cout << denom << std::endl;
 
 	// this->center is the "center" of the plane, 
 	// i.e. an Abitrary pt A on the plane
 	float numer = dot(this->center - orig, this->normal);
 	tNear = numer / denom;
+	
 	return (tNear >= 0.0001f);
+
 }
 
 void Plane::getSurfaceProperties(const glm::vec3& P, 

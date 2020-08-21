@@ -22,7 +22,7 @@
 #include "time.h"
 
 
-#define MAX_RECURSION_DEPTH 2
+#define MAX_RECURSION_DEPTH 3
 #define STARTING_DEPTH 0
 
 #include "windows.h"
@@ -255,7 +255,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 	const std::vector<Object*>& objects,
 	const Options opts,
 	uint32_t depth) {
-	Color hitColor;
+	Color hitColor = Color();
 	// check whether depth is greater than maxDepth, assign 
 	// black background if so
 	if (depth > MAX_RECURSION_DEPTH) {
@@ -275,8 +275,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 		glm::vec2 st; // for triangle meshes
 
 			// set floor tiles to be checkered
-		if (hitObj->getColor().getColorSpecial() == 2.0f ) {
-
+		if (hitObj->getColor().getColorSpecial() == 2.0f) {
 			int squareTile = floor(hitPoint.x) + floor(hitPoint.z);
 			if (squareTile % 2 == 0) {
 				hitObj->setColor(0.0f, 0.0f, 0.0f);
@@ -286,18 +285,18 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 			}
 		}
 
-		// add ambient component to color
-		hitColor = hitObj->getColor() * opts.ambientLight;
-
 		// getSurfaceProperties returns normal of the surface only (for now)
 		hitObj->getSurfaceProperties(hitPoint, dir, objIndex, uv, N, st);
 
 		switch (hitObj->getMaterialType()) {
+			case REFLECTION_AND_REFRACTION: {
+
+			}
 			case REFLECTION: { // object is perfectly a mirror
 				float kr = .0f;
 				// fresnel -- sets the normal, and sets Kr (reflect ratio)
-				computeFresnel(dir, N, objects[objIndex]->ior, kr);
-				
+				//computeFresnel(dir, N, objects[objIndex]->ior, kr);
+				//N = hitObj->getNormal(hitPoint);
 				// computer reflection direction
 				glm::vec3 reflection_dir = normalize(dir - 2.0f * dot(dir, N) * N);
 				// reflection ray orig must be biased to avoid shadow acne
@@ -306,22 +305,88 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 				glm::vec3 reflection_ray_origin = (dot(reflection_dir, N) < 0.0f) ? 
 					hitPoint - N*opts.bias : 
 					hitPoint + N*opts.bias;
+
 				// make recursive call to castRay function to sample the color of 
 				// the reflected ray cast out from the hitPoint 
-				hitColor = hitColor + castRay(hitPoint, reflection_dir, sources, objects, opts, ++depth);
-				break;
+				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * 1.0f;
+				break;	
 			}
-			// default is DIFFUSE_AND_GLOSSY material
-			// compute Lambertian (diffuse) and Phong shading		
-			default: { 
-	
+			case DIFFUSE_AND_GLOSSY_AND_REFLECTION: {
+				// REFLECTIVE PART -- apply recursion
+				float kr = .0f;
+				// fresnel -- sets the normal, and sets Kr (reflect ratio)
+				//computeFresnel(dir, N, objects[objIndex]->ior, kr);
+
+				// computer reflection direction
+				glm::vec3 reflection_dir = normalize(dir - 2.0f * dot(dir, N) * N);
+				// reflection ray orig must be biased to avoid shadow acne
+				// if dot(R, N) < 0, ref ray inside the surface, else its outside surface
+				// the ternary condition might be wrong, check again
+				glm::vec3 reflection_ray_origin = (dot(reflection_dir, N) < 0.0f) ?
+					hitPoint - N * opts.bias :
+					hitPoint + N * opts.bias;
+				// make recursive call to castRay function to sample the color of 
+				// the reflected ray cast out from the hitPoint 
+				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * 0.08f;
+
+				// DIFFUSE & GLOSSY part, apply Phong -----------------
+				// add ambient component to color
+				hitColor = hitColor + hitObj->getColor() * opts.ambientLight;
 				// iterate thru each light source and sum their contribution
 				// kd (diffuse color) * I (light intensity) * dot(N, l) +
 				// Ks * I * pow(dot(h, N), phongExponent);
 				Color sumDiffuse = Color();
 				Color sumSpecular = Color();
 				glm::vec3 shadowOrigPoint = (dot(dir, N) < 0) ?
-					hitPoint + N * opts.bias : hitPoint - N * opts.bias;
+					hitPoint + N * opts.bias :
+					hitPoint - N * opts.bias;
+				for (int i = 0; i < sources.size(); i++) {
+					float tShadowNear = FLT_MAX;
+					Object* shadowObj = nullptr;
+					// get light direction,  
+					glm::vec3 light_dir = sources[i]->getLightPos() - hitPoint;
+					// squared distance from hit point to light source
+					float light_distance_sq = dot(light_dir, light_dir);
+					light_dir = normalize(light_dir);
+
+					// trace rays back to lightsource and do intersection tests:
+					// If an object intersected by shadow ray, and the object's is closer
+					// to the shadowOrigin than the light, the region will be in shadow
+					bool inShadow = trace(shadowOrigPoint, light_dir, objects,
+						tShadowNear, objIndex, uv, &shadowObj) && (tShadowNear * tShadowNear) < light_distance_sq;
+
+
+					// calculate diffuse contribution
+					// not sure why you need to include the surface color in this equation
+					// (1- inShadow) checks if i-th light being blocked by an object
+					sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
+						max(0.0f, dot(N, light_dir)) * ((double)1 - inShadow);
+
+					// calculate specular contribution
+					glm::vec3 scalar = 2.0f * N * dot(light_dir, N);
+					glm::vec3 reflectionDir = normalize(scalar - light_dir);
+					sumSpecular = sumSpecular + sources[i]->getLightColor() *
+						pow(max(0.0f, dot(reflectionDir, -dir)), hitObj->phongExponent) *
+						((double)1 - inShadow);
+
+				}
+				hitColor = hitColor + sumDiffuse * hitObj->getColor() *
+					hitObj->kd + sumSpecular * hitObj->ks;
+				break;
+			}
+			// default is DIFFUSE_AND_GLOSSY material
+			// compute Lambertian (diffuse) and Phong shading		
+			default: {
+				// add ambient component to color
+				hitColor = hitObj->getColor() * opts.ambientLight;
+				// iterate thru each light source and sum their contribution
+				// kd (diffuse color) * I (light intensity) * dot(N, l) +
+				// Ks * I * pow(dot(h, N), phongExponent);
+				Color sumDiffuse = Color();
+				Color sumSpecular = Color();
+				glm::vec3 shadowOrigPoint = (dot(dir, N) < 0) ?
+					hitPoint + N * opts.bias : 
+					hitPoint - N * opts.bias;
 				for (int i = 0; i < sources.size(); i++) {
 					float tShadowNear = FLT_MAX;
 					Object* shadowObj = nullptr;
@@ -337,7 +402,6 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 					bool inShadow = trace(shadowOrigPoint, light_dir, objects, 
 						tShadowNear, objIndex, uv, &shadowObj) && (tShadowNear * tShadowNear) < light_distance_sq;
 
-
 					// calculate diffuse contribution
 					// not sure why you need to include the surface color in this equation
 					// (1- inShadow) checks if i-th light being blocked by an object
@@ -350,6 +414,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 					sumSpecular = sumSpecular + sources[i]->getLightColor() * 
 						pow( max(0.0f, dot(reflectionDir, -dir)), hitObj->phongExponent) * 
 						((double)1 - inShadow);
+
 				}
 				hitColor = hitColor + sumDiffuse * hitObj->getColor() * 
 					hitObj->kd + sumSpecular * hitObj->ks;
@@ -359,7 +424,8 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 	}
 	else { // no object intersected
 		// return b.g. color
-		return hitColor = Color(.0f, .0f, .0f, .0f);
+		return hitColor = Color(201.0f / 255.0f, 226.0f / 255.0f, 255.0f/255.0f, .0f);
+		//return hitColor = Color(.0f, .0f , .0f, .0f);
 	}
 
 	return hitColor.colorClip();
@@ -394,7 +460,7 @@ bool trace(glm::vec3 orig, glm::vec3 dir,
 		if (objects[k]->findIntersection(orig, dir, tCurrNearest, indexK, uvK)
 			&& tCurrNearest < tNear) {
 			tNear = tCurrNearest;
-			objIndex = indexK;
+			objIndex = k;
 			*hitObject = objects[k];
 			uv = uvK;
 		}
@@ -417,7 +483,7 @@ int main(int argc, char* argv[]) {
 
 	// Anti-aliasing depth (default: 1) 
 	// 1 pixel, 4 pixels, 9 etc.
-	int aaDepth = 1;
+	int aaDepth = 2;
 
 	// Record rendering time elapsed
 	clock_t t1, t2; 
@@ -426,7 +492,7 @@ int main(int argc, char* argv[]) {
 	// initializing all pixels in frame buffer to default value 
 	Color* colorBuffer = new Color[options.width*options.height];
 	for (int i = 0; i < options.width*options.height; i++) {
-		colorBuffer[i] = Color(.0f, .0f, .0f, 1.0f);
+		colorBuffer[i] = Color(201.0f / 255.0f, 226.0f / 255.0f, 255.0f / 255.0f, .0f);
 	}
 
 	// Colors
@@ -442,10 +508,10 @@ int main(int argc, char* argv[]) {
 	Light theLight(glm::vec3(-7.0f, 5.0f, 3.0f), whiteLight);
 
 	// Objects
-	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f, prettyGreen, DIFFUSE_AND_GLOSSY);
+	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f, prettyGreen, DIFFUSE_AND_GLOSSY_AND_REFLECTION);
 	Sphere scene_sphere2(glm::vec3(1.7f, -.7f, -2.80f), 0.3f, maroon, DIFFUSE_AND_GLOSSY);
 
-	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(.0f, -1.0f, .0f), white, DIFFUSE_AND_GLOSSY);
+	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(1.0f, -1.0f, .0f), white, DIFFUSE_AND_GLOSSY);
 
 	// Generating Camera  
 	glm::vec3 cameraPos(.0f, .35f, 0.0f);
@@ -499,9 +565,12 @@ int main(int argc, char* argv[]) {
 							* options.aspectRatio * tan(options.fov / 2);
 						beta = (1 - (2 * (y + (float)aay / ((float)aaDepth - 1)) / (float)options.height)) * tan(options.fov / 2);
 						
+						rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamLookAt());
 						rayOrigin = cameraPos;
-						Ray camRay(rayOrigin, normalize(glm::vec3(alpha, beta, 0.0f) + cam.getCamLookAt()));
+						Ray camRay(rayOrigin, rayDir); // generate cam ray
 
+						// castRay function (replaces the getColor() function)
+						// this replaces getColor function
 						// getColorAt returns the clipped color
 						Color tempCol = castRay(rayOrigin, rayDir, lights, sceneObjects, options, STARTING_DEPTH);
 						tempColor[aaIdx] = tempCol;
