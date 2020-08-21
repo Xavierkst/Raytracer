@@ -247,6 +247,71 @@ void computeFresnel(const glm::vec3& incident,
 	}
 }
 
+// computes the amount of light reflected from transparent
+// object and stored into kr in range [0.0f, 1.0f]
+void fresnel(const glm::vec3& I, glm::vec3& N, float ior, float kr) {
+	// get the refraction index and eta 
+	float etai = 1.0f; float etat = ior; 
+	float cosi = clamp(-1, 1, dot(I, N));
+
+	// check if ray is incoming from inside or outside the object
+	// dot(I, N) >= 0 means coming from inside, so we swap the 
+	// ref. indices, also flip the normal
+	if (cosi > 0.0f) {
+		std::swap(etai, etat); 
+		//nRef = -N; // no need to swap normal
+	}
+	float eta = etai / etat;
+	// check for total internal reflection, 
+	// i.e. if 1 - sin(theta2)^2 term is negative
+	// (or) sin(theta2) > 1, then its TIR
+	float sint = eta * sqrtf(max(.0f, ( 1.0f -  cosi * cosi )));
+	if (sint >= 1.0f) {
+		// TIR occurs
+		kr = 1.0f; 
+	} 
+	// if NOT TIR, theres some portion of 
+	// incident light that gets transmitted
+	else {
+		float cost = sqrtf(max(0.0f, sqrtf(1 - sint*sint)));
+		cosi = fabsf(cosi);
+		float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+		float Rp = ((etai * cost) - (etat * cosi)) / ((etai * cost) + (etat * cosi));
+		kr = 0.5f * ((float)Rp * Rp + (float) Rs * Rs); 
+	}
+}
+
+
+// Computes the refracted ray given Incident ray, normal, 
+// and idx of refraction
+ glm::vec3 refract(glm::vec3 I, glm::vec3 N, float ior) {
+	// we assume incoming ray by default comes from the medium
+	// of lower refractive index (i.e. from air to something denser)
+	float cosi = clamp(-1, 1, dot(I, N));
+	float etai = 1.0f; float etat = ior;
+	glm::vec3 nRef = N;
+	// test if ray is coming from medium of lower/higher ref idx
+	if ( cosi < 0 ) {
+		// ray coming from medium of lower ref idx,
+		// cosi or cos(theta 1) will be negative, so negate that
+		cosi = - cosi;
+	}
+	else {
+		// coming from denser to less dense medium. Swap refract idxes
+		std::swap(etai, etat);
+		// negate the normal as well. 
+		// dw about cosi, its unchanged since >= 0 alrdy
+		nRef = -N;
+	}
+
+	float eta = etai / etat;
+	// check for total internal reflection TIR -- see if  1- sin(theta2)^2
+	// +ve or -ve, if negative, no portion of ray is transmitted
+	float k = 1 - eta*eta*(1 - cosi * cosi);
+	return k < 0.0f ? glm::vec3(.0f) : eta * I + nRef * (eta * cosi - sqrtf(k));
+}
+				
+
 // Given a ray position & dir, casts the ray into the scene
 // intersecting with scene objects (Sometimes recursively) and 
 // evaluating and returning the final color onto each pixel
@@ -290,7 +355,35 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 
 		switch (hitObj->getMaterialType()) {
 			case REFLECTION_AND_REFRACTION: {
+				float kr = 0.0f; // ratio of reflected light
+				float kt;
+				// When primary ray incident on transparent material, 
+				// 2 rays produced: Reflection ray, and refraction ray
 
+				// Generate refraction ray: 
+				// add bias, test if incoming ray is from inside or outside obj
+				glm::vec3 refract_ray_orig = dot(dir, N) < 0.0f ? 
+					hitPoint - N * opts.bias : hitPoint + N * opts.bias;
+				glm::vec3 refract_ray_dir = normalize(refract(dir, N, hitObj->ior));
+				// compute fresnel 
+				fresnel(dir, N, hitObj->ior, kr);
+				kt = 1.0f - kr;
+				// if amt of light reflected is less than 100% 
+				if (kr < 1.0f) {
+					// cast refraction ray:
+					hitColor = hitColor + castRay(refract_ray_orig, 
+						refract_ray_dir, sources, objects, opts, ++depth) * kt;
+				}
+
+				// Ratio of light transmitted 
+				//float kt = 1 - kr;
+				//// Generate reflection ray: 
+				//glm::vec3 reflection_dir = normalize(dir - 2.0f * dot(dir, N) * N);
+				//glm::vec3 reflection_ray_origin = (dot(reflection_dir, N) < 0.0f) ?
+				//	hitPoint - N * opts.bias :
+				//	hitPoint + N * opts.bias;
+				//hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * 0.3;
+				break;
 			}
 			case REFLECTION: { // object is perfectly a mirror
 				float kr = .0f;
@@ -483,7 +576,7 @@ int main(int argc, char* argv[]) {
 
 	// Anti-aliasing depth (default: 1) 
 	// 1 pixel, 4 pixels, 9 etc.
-	int aaDepth = 2;
+	int aaDepth = 4;
 
 	// Record rendering time elapsed
 	clock_t t1, t2; 
@@ -508,7 +601,7 @@ int main(int argc, char* argv[]) {
 	Light theLight(glm::vec3(-7.0f, 5.0f, 3.0f), whiteLight);
 
 	// Objects
-	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f, prettyGreen, DIFFUSE_AND_GLOSSY_AND_REFLECTION);
+	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f, prettyGreen, REFLECTION_AND_REFRACTION);
 	Sphere scene_sphere2(glm::vec3(1.7f, -.7f, -2.80f), 0.3f, maroon, DIFFUSE_AND_GLOSSY);
 
 	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(1.0f, -1.0f, .0f), white, DIFFUSE_AND_GLOSSY);
