@@ -1,7 +1,7 @@
 #include "Object.h"
 
 
-Object::Object() : ior(1.05f), material(DIFFUSE_AND_GLOSSY), 
+Object::Object() : ior(1.3f), material(DIFFUSE_AND_GLOSSY), 
 	kd(0.8f), ks(0.4f), phongExponent(20)
 {
 }

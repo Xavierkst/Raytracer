@@ -404,22 +404,41 @@ int main(int argc, char* argv[]) {
 	// special value of flooring set to 2
 	Color maroon(.5f, .25f, .25f, 0.5f);
 	Color white(1.0f, 1.0f, 1.0f, 2.0f);
-	Color prettyGreen(0.5f, 1.0f, 0.5f, 0.5f);
+	Color pastel_green(0.5f, 1.0f, 0.5f, 0.5f);
 	Color gray(.5f, .5f, .5f, .0f);
 	Color black(.0f, .0f, .0f, .0f);
+	Color perinwinkle(199.0f / 255.0f, 206.0f / 255.0f, 234.0f / 255.0f, .0f);
+	Color pastel_pink(255 / 255.0f, 154 / 255.0f, 162 / 255.0f, .0f);
+	Color pastel_blue(199.0f / 255.0f, 206.0f / 255.0f, 234.0f / 255.0f, .0f);
 
 	// Lights
 	Light theLight(glm::vec3(-7.0f, 5.0f, 3.0f), whiteLight);
 
 	// Objects
-	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f, prettyGreen, REFLECTION_AND_REFRACTION);
-	scene_sphere.ior = 1.015f;
-	Sphere scene_sphere2(glm::vec3(1.7f, .0f, -2.80f), 0.6f, maroon, REFLECTION_AND_REFRACTION);
-	scene_sphere2.ior = 1.005f;
-	Sphere scene_sphere3(glm::vec3(-1.7f, .0f, -2.80f), 0.6f, maroon, REFLECTION_AND_REFRACTION);
-	scene_sphere3.ior = 2.0f;
-	Sphere scene_sphere4(glm::vec3(.0f, -.7f, -5.3f), 0.3f, maroon, DIFFUSE_AND_GLOSSY);
-	Sphere scene_sphere5(glm::vec3(.0f, -.7f, -1.7f), 0.3f, prettyGreen, DIFFUSE_AND_GLOSSY);
+	// center
+	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f, 
+		pastel_green, REFLECTION_AND_REFRACTION);
+	scene_sphere.ior = 1.04f;
+	// right
+	Sphere scene_sphere2(glm::vec3(1.7f, -.3f, -2.80f), 
+		0.6f, maroon, REFLECTION);
+	scene_sphere2.ior = FLT_MAX;
+	// left
+	Sphere scene_sphere3(glm::vec3(-1.7f, -.3f, -2.80f), 
+		0.6f, maroon, REFLECTION_AND_REFRACTION);
+	scene_sphere3.ior = 3.0f;
+	// b.g. mid-left
+	Sphere scene_sphere4(glm::vec3(-.4f, -.7f, -5.3f), 0.35f, 
+		pastel_pink, DIFFUSE_AND_GLOSSY);
+	// b.g. mid-right
+	Sphere scene_sphere5(glm::vec3(.4f, -.7f, -5.3f), 0.35f, 
+		pastel_blue, DIFFUSE_AND_GLOSSY);
+	// foreground left
+	Sphere scene_sphere6(glm::vec3(-.5f, -.7f, -1.7f), 0.25f,
+		pastel_blue, DIFFUSE_AND_GLOSSY);
+	// b.g. left most
+	Sphere scene_sphere7(glm::vec3(-3.9f, .0f, -5.3f), 0.35f,
+		pastel_pink, DIFFUSE_AND_GLOSSY);
 
 	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(1.0f, -1.0f, .0f), white, DIFFUSE_AND_GLOSSY);
 
@@ -430,6 +449,10 @@ int main(int argc, char* argv[]) {
 	sceneObjects.push_back(&scene_sphere3);
 	sceneObjects.push_back(&scene_sphere4);
 	sceneObjects.push_back(&scene_sphere5);
+	sceneObjects.push_back(&scene_sphere6);
+	sceneObjects.push_back(&scene_sphere7);
+
+
 
 	sceneObjects.push_back(&plane);
 

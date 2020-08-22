@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 
-#define MAX_RECURSION_DEPTH 5
+#define MAX_RECURSION_DEPTH 6
 #define STARTING_DEPTH 0
 
 class Options {
@@ -22,7 +22,7 @@ public:
 	float bias;
 	// default constructor
 	Options() {
-		aaDepth = 5;
+		aaDepth = 4;
 		width = 1080;
 		height = 720;
 		aspectRatio = (float)width / (float)height;
