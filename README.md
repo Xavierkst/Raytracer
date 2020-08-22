@@ -9,7 +9,7 @@
 ### Left & Center transparent spheres, Right sphere mirror (reflective only) 
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/Refactored_branch/testFile_AA_5.jpg)
 ### L & R side: Mirror spheres, Center: transparent sphere (its reflection can seen in left and right spheres) 
-![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/Refactored_branch/testFile_2.jpg)
+![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/testFile_2.jpg)
 ### Reflections for diffuse & glossy materials
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/Refactored_branch/testFile_AA_5.jpg)
 ### Upcoming features to implement:  
