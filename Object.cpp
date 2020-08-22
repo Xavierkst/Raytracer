@@ -1,10 +1,16 @@
 #include "Object.h"
 
-double Object::findIntersection(Ray ray) {
-	//double distance = FLT_MAX;
 
-	// iterate through each item 
-	return 0.0f;
+Object::Object() : ior(1.05f), material(DIFFUSE_AND_GLOSSY), 
+	kd(0.8f), ks(0.4f), phongExponent(20)
+{
+}
+
+bool Object::findIntersection(glm::vec3 orig,
+	glm::vec3 dir, float& tNear, 
+	int& index, glm::vec2& uv) const
+{
+	return false;
 }
 
 Color Object::getColor() {
@@ -15,7 +21,18 @@ void Object::setColor(float r, float g, float b) {
 	// empty body
 }
 
-glm::vec3 Object::getNormal(glm::vec3 point)
-{
+glm::vec3 Object::getNormal(glm::vec3 point) {
 	return glm::vec3(.0f);
+}
+
+void Object::getSurfaceProperties(const glm::vec3& P, 
+	const glm::vec3& I, const int& index, 
+	const glm::vec2& uv, glm::vec3& N, 
+	glm::vec2& st)
+{
+}
+
+materialType Object::getMaterialType() {
+	// empty body
+	return DIFFUSE;
 }

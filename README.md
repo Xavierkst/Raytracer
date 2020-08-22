@@ -1,12 +1,17 @@
-## README file for this Ray tracer
+## Raytracer README
+### (All images Rendered with Anti aliasing depth 5 & recursive ray tracing depth 5)
+### 3 transparent spheres of varying refractive indices (fresnel effect apparent in rightmost sphere)
+![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/Refactored_branch/testFile_1.jpg)
 
-### Rendered with Anti aliasing depth 5
-![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/testFile_AA_5.jpg)
+### L & R side: Mirror spheres, Center: Glass sphere (glass sphere reflection can seen in left and right spheres) 
+![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/Refactored_branch/testFile_AA_5_reflections.jpg)
 
-### Rendered without Anti-aliasing 
-![Ray traced with no Anti-aliasing](https://github.com/Xavierkst/Raytracer_build/blob/master/testFile_no_AA.jpg)
-
-### Upcoming features to implement: 
-* Refractions 
-* Soft Shadows 
+### Reflections for diffuse & glossy materials
+![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/Refactored_branch/testFile_AA_5.jpg)
+### Upcoming features to implement:  
 * Acceleration Structures (bounding volume hierarchy)
+* Triangle Meshes 
+* Spherical Lights 
+* Monte Carlo ray tracing (soft shadows) 
+* Diffuse reflections
+* Texture mapping

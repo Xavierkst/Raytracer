@@ -1,39 +1,47 @@
 #include "Plane.h"
-
+#include <iostream>
 Plane::Plane() {
 	this->normal = glm::vec3(1.0f, 0.0f, 0.0f);
 	this->color = Color(.5f, .5f, .5f, 0);
 	this->center = glm::vec3(.0f);
 }
 
-Plane::Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor) {
+Plane::Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor, materialType mat) {
 	this->normal = normalize(normal);
 	this->color = pColor;
 	this->center = planeCenter;
+	this->material = mat;
 }
 
-double Plane::findIntersection(Ray ray) {
-	double t = FLT_MAX;
-
+bool Plane::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear, int& index, glm::vec2& uv) const {
 	// Check if ray is || to plane 
 	// i.e Denominator == 0
-	float denom = dot(ray.getRayDir(), this->normal);
-	if (denom == 0) {
-		return -1.0f;
+	float denom = dot(dir, this->normal);
+	if ( fabsf(denom) < 0.0001f) {
+		return false;
 	}
+	//if (denom < 0.0f) std::cout << denom << std::endl;
 
 	// this->center is the "center" of the plane, 
 	// i.e. an Abitrary pt A on the plane
-	float numer = dot(this->center - ray.getRayOrig(), this->normal);
-	t = numer / denom;
+	float numer = dot(this->center - orig, this->normal);
+	tNear = numer / denom;
 	
-	// check distance is within bounds
-	// Also prevents Shadow Acne
-	if (t <= T_MIN_VAL || t >= T_MAX_VAL) {
-		return -1.0f;
-	}
+	return (tNear >= 0.0001f);
 
-	return t;
+}
+
+void Plane::getSurfaceProperties(const glm::vec3& P, 
+	const glm::vec3& I, const int& index, 
+	const glm::vec2& uv, glm::vec3& N, 
+	glm::vec2& st)
+{	
+	N = normal;
+}
+
+materialType Plane::getMaterialType()
+{
+	return material;
 }
 
 glm::vec3 Plane::getNormal(glm::vec3 point) {

@@ -1,9 +1,9 @@
 #include "Color.h"
 
 Color::Color() {
-	this->r = 0.5f;
-	this->g = 0.5f;
-	this->b = 0.5f;
+	this->r = 0.0f;
+	this->g = 0.0f;
+	this->b = 0.0f;
 	this->special = 0.0f;
 }
 
