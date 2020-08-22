@@ -188,7 +188,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 				// if amt of light reflected is less than 100% 
 				if (kr < 1.0f) {
 					// cast refraction ray:
-					hitColor = hitColor + castRay(refract_ray_orig, 
+					hitColor = hitColor + hitObj->getColor() * castRay(refract_ray_orig,
 						refract_ray_dir, sources, objects, opts, ++depth) * kt;
 				}
 				//std::cout << kr << std::endl;
@@ -404,12 +404,13 @@ int main(int argc, char* argv[]) {
 	// special value of flooring set to 2
 	Color maroon(.5f, .25f, .25f, 0.5f);
 	Color white(1.0f, 1.0f, 1.0f, 2.0f);
-	Color pastel_green(0.5f, 1.0f, 0.5f, 0.5f);
+	Color green(0.5f, 1.0f, 0.5f, 0.5f);
 	Color gray(.5f, .5f, .5f, .0f);
 	Color black(.0f, .0f, .0f, .0f);
 	Color perinwinkle(199.0f / 255.0f, 206.0f / 255.0f, 234.0f / 255.0f, .0f);
 	Color pastel_pink(255 / 255.0f, 154 / 255.0f, 162 / 255.0f, .0f);
 	Color pastel_blue(199.0f / 255.0f, 206.0f / 255.0f, 234.0f / 255.0f, .0f);
+	Color mint(181 / 255.0f, 234 / 255.0f, 215 / 255.0f, .0f);
 
 	// Lights
 	Light theLight(glm::vec3(-7.0f, 5.0f, 3.0f), whiteLight);
@@ -417,7 +418,7 @@ int main(int argc, char* argv[]) {
 	// Objects
 	// center
 	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f, 
-		pastel_green, REFLECTION_AND_REFRACTION);
+		pastel_blue, REFLECTION_AND_REFRACTION);
 	scene_sphere.ior = 1.04f;
 	// right
 	Sphere scene_sphere2(glm::vec3(1.7f, -.3f, -2.80f), 
@@ -425,7 +426,7 @@ int main(int argc, char* argv[]) {
 	scene_sphere2.ior = FLT_MAX;
 	// left
 	Sphere scene_sphere3(glm::vec3(-1.7f, -.3f, -2.80f), 
-		0.6f, maroon, REFLECTION_AND_REFRACTION);
+		0.6f, mint, REFLECTION_AND_REFRACTION);
 	scene_sphere3.ior = 3.0f;
 	// b.g. mid-left
 	Sphere scene_sphere4(glm::vec3(-.4f, -.7f, -5.3f), 0.35f, 
@@ -451,8 +452,6 @@ int main(int argc, char* argv[]) {
 	sceneObjects.push_back(&scene_sphere5);
 	sceneObjects.push_back(&scene_sphere6);
 	sceneObjects.push_back(&scene_sphere7);
-
-
 
 	sceneObjects.push_back(&plane);
 
