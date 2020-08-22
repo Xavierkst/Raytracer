@@ -21,10 +21,6 @@
 #include "Options.h"
 #include "time.h"
 
-
-#define MAX_RECURSION_DEPTH 5
-#define STARTING_DEPTH 0
-
 #include "windows.h"
 #define _CRTDBG_MAP_ALLOC //to get more details
 #include <stdlib.h>  
@@ -393,10 +389,6 @@ int main(int argc, char* argv[]) {
 	// Rendering image options (fov, width, height etc.)
 	Options options; 
 
-	// Anti-aliasing depth (default: 1) 
-	// 1 pixel, 4 pixels, 9 etc.
-	int aaDepth = 5;
-
 	// Record rendering time elapsed
 	clock_t t1, t2; 
 	t1 = clock();
@@ -426,7 +418,7 @@ int main(int argc, char* argv[]) {
 	scene_sphere2.ior = 1.005f;
 	Sphere scene_sphere3(glm::vec3(-1.7f, .0f, -2.80f), 0.6f, maroon, REFLECTION_AND_REFRACTION);
 	scene_sphere3.ior = 2.0f;
-	Sphere scene_sphere4(glm::vec3(.0f, -.7f, -18.3f), 0.3f, maroon, DIFFUSE_AND_GLOSSY);
+	Sphere scene_sphere4(glm::vec3(.0f, -.7f, -5.3f), 0.3f, maroon, DIFFUSE_AND_GLOSSY);
 	Sphere scene_sphere5(glm::vec3(.0f, -.7f, -1.7f), 0.3f, prettyGreen, DIFFUSE_AND_GLOSSY);
 
 	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(1.0f, -1.0f, .0f), white, DIFFUSE_AND_GLOSSY);
@@ -455,14 +447,14 @@ int main(int argc, char* argv[]) {
 	float alpha, beta;
 	glm::vec3 rayDir, rayOrigin;
 	// anti aliasing color buffer
-	Color* tempColor = new Color[aaDepth * aaDepth]; 
+	Color* tempColor = new Color[options.aaDepth * options.aaDepth];
 	int aaIdx = 0; // anti aliasing index
 
 	for (int y = 0; y < options.height; y++) {
 		for (int x = 0; x < options.width; x++) {
 			Color pixelColor;
 			// Render w/o anti-aliasing
-			if (aaDepth == 1) {
+			if (options.aaDepth == 1) {
 				alpha = ((2 * (x + 0.5) / (float)options.width) - 1.0f)
 					* options.aspectRatio * tan(options.fov / 2);
 				beta = (1 - (2 * (y + 0.5) / (float)options.height)) 
@@ -479,12 +471,12 @@ int main(int argc, char* argv[]) {
 			// Render with Anti-aliasing 
 			else {
 				// add another double for loop here for anti-aliasing
-				for (int aay = 0; aay < aaDepth; aay++) {
-					for (int aax = 0; aax < aaDepth; aax++) {
-						aaIdx = aax + aay * aaDepth;
-						alpha = ((2 * (x + (float)aax / ((float)aaDepth - 1) ) / (float)options.width) - 1.0f)
+				for (int aay = 0; aay < options.aaDepth; aay++) {
+					for (int aax = 0; aax < options.aaDepth; aax++) {
+						aaIdx = aax + aay * options.aaDepth;
+						alpha = ((2 * (x + (float)aax / ((float)options.aaDepth - 1) ) / (float)options.width) - 1.0f)
 							* options.aspectRatio * tan(options.fov / 2.0f);
-						beta = (1 - (2 * (y + (float)aay / ((float)aaDepth - 1)) / (float)options.height)) * tan(options.fov / 2.0f);
+						beta = (1 - (2 * (y + (float)aay / ((float)options.aaDepth - 1)) / (float)options.height)) * tan(options.fov / 2.0f);
 						
 						rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamLookAt());
 						rayOrigin = cameraPos;
@@ -502,14 +494,14 @@ int main(int argc, char* argv[]) {
 				double avgR = 0;
 				double avgG = 0;
 				double avgB = 0;
-				for (int k = 0; k < aaDepth * aaDepth; k++) {
+				for (int k = 0; k < options.aaDepth * options.aaDepth; k++) {
 					avgR += tempColor[k].getColorR();
 					avgG += tempColor[k].getColorG();
 					avgB += tempColor[k].getColorB();
 				}
-				pixelColor.setColorR(avgR / ((double)aaDepth * aaDepth));
-				pixelColor.setColorG(avgG / ((double)aaDepth * aaDepth));
-				pixelColor.setColorB(avgB / ((double)aaDepth * aaDepth));
+				pixelColor.setColorR(avgR / ((double)options.aaDepth * options.aaDepth));
+				pixelColor.setColorG(avgG / ((double)options.aaDepth * options.aaDepth));
+				pixelColor.setColorB(avgB / ((double)options.aaDepth * options.aaDepth));
 			}
 			
 			// apply the color to the final image

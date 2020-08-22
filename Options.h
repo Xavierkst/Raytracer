@@ -3,21 +3,26 @@
 
 #include <glm/glm.hpp>
 
+#define MAX_RECURSION_DEPTH 5
+#define STARTING_DEPTH 0
+
 class Options {
 private:
 
 public:
 	int width;
 	int height;
-
+	// Anti-aliasing depth (default: 1) 
+	// 1 pixel, 4 pixels, 9 etc.
+	int aaDepth;
 	float fov;
 	float aspectRatio;
 	float ambientLight;
 	glm::vec3 backgroundColor;
-	int maxDepth;
 	float bias;
 	// default constructor
 	Options() {
+		aaDepth = 5;
 		width = 1080;
 		height = 720;
 		aspectRatio = (float)width / (float)height;

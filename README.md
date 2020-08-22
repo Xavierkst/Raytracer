@@ -1,11 +1,10 @@
-## README file for this Ray tracer 
+## Xavier's ray tracer README file 
+##### (All images Rendered with Anti aliasing depth 5 & recursive ray tracing depth 5)
 
-### All images Rendered with Anti aliasing depth 5
-
-### Rendering 3 transparent spheres of varying refractive indices  
+### 3 transparent spheres of varying refractive indices (fresnel effect apparent in rightmost sphere)
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/Refactored_branch/testFile_no_AA.jpg)
 
-### Rendering 2 mirror spheres on each side. 1 glass sphere middle (high refractive index)
+### Rendering 2 mirror spheres on each side. 1 glass(transparent) sphere in the middle (middle glass sphere reflection as seen in left and right spheres) 
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/Refactored_branch/testFile_AA_5_reflections.jpg)
 
 ### Rendering reflections for diffuse & glossy materials
