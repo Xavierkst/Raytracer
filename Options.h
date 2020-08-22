@@ -14,8 +14,7 @@ public:
 	float aspectRatio;
 	float ambientLight;
 	glm::vec3 backgroundColor;
-	uint8_t maxDepth;
-	
+	int maxDepth;
 	float bias;
 	// default constructor
 	Options() {

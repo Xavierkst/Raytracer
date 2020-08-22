@@ -22,7 +22,7 @@
 #include "time.h"
 
 
-#define MAX_RECURSION_DEPTH 3
+#define MAX_RECURSION_DEPTH 5
 #define STARTING_DEPTH 0
 
 #include "windows.h"
@@ -59,197 +59,14 @@ void writeImage(std::string fileName, float exposure, float gamma, Color* pixelD
 	resultToPNG(fileName, width, height, imageData);
 }
 
-// Returns the index of the closest object
-int findClosestObjIndex(std::vector<double>& intersections) {
-	double max = FLT_MAX;
-	int closestIdx = 0;
-	if (intersections.size() == 0) {
-		return -1;
-	}
-	// find the min dist in the array
-	for (int k = 0; k < intersections.size(); k++) {
-		if (intersections[k] > T_MIN_VAL && intersections[k] < max) {
-			max = intersections[k];
-			closestIdx = k;
-		}
-	}
-	// if there is no intersection that is positive
-	if (max == FLT_MAX) {
-		return -1;
-	}
-	else {
-		return closestIdx;
-	}
-}
-
-// intersectingRayDir used for finding reflected Ray
-// intersectingRayDir i.e. opposite of viewDirection V 
-// view direction V points from the object to eye
-//Color getColorAt(glm::vec3 intersectionPos, glm::vec3 intersectingRayDir,
-//	std::vector<LightSources*>& sources, std::vector<Object*>& objects,
-//	int closestIdx, float ambientLightConst, int reflectionDepth) {
-//
-//
-//	if (objects[closestIdx]->getColor().getColorSpecial() == 2.0f) {
-//		
-//		int squareTile = floor(intersectionPos.x) + floor(intersectionPos.z);
-//		if (squareTile % 2 == 0) {
-//			objects[closestIdx]->setColor(0.0f, 0.0f, 0.0f);
-//		}
-//		else {
-//			objects[closestIdx]->setColor(1.0f, 1.0f, 1.0f);
-//		}
-//	}
-//
-//	// get closest (primary) object color 
-//	Color finalColor = objects[closestIdx]->getColor() * ambientLightConst;
-//	glm::vec3 objectNormal = objects[closestIdx]->getNormal(intersectionPos);
-//
-//	// Reflection rays: 
-//	// cast secondary rays from the primary intersection 
-//	// point and do intersection test again with all objects in the scene.
-//	// Sum up their surface color contributions with the primary object's 
-//	// surface color (recursively call getColorAt() again) 
-//	
-//	// check if object has a shiny/glossy property (i.e. surface is reflective)
-//	// i.e. specialValue in range [0,1]
-//	if (objects[closestIdx]->getColor().getColorSpecial() > 0.0f &&
-//		objects[closestIdx]->getColor().getColorSpecial() <= 1.0f && reflectionDepth < MAX_RECURSION_DEPTH) {
-//		// Do intersection test at the point of intersection on the primary obj
-//		glm::vec3 scalar = 2.0f * objectNormal * dot(intersectingRayDir, objectNormal);
-//		glm::vec3 reflectionDir = normalize(intersectingRayDir - scalar);
-//		Ray reflection_ray(intersectionPos, reflectionDir);
-//		std::vector<double> reflectionArr; 
-//
-//		for (int j = 0; j < objects.size(); j++) {
-//			reflectionArr.push_back(objects[j]->findIntersection(reflection_ray));
-//		}
-//		int closestRefObjIdx = findClosestObjIndex(reflectionArr);
-//		// if closest reflected Object index is not -1, the reflected ray
-//		// hit an object. So we sample the color of the object
-//		if (closestRefObjIdx != -1) {
-//			glm::vec3 ref_intersect_pt = intersectionPos + reflectionDir * 
-//				(float)reflectionArr[closestRefObjIdx];
-//
-//			finalColor = finalColor + getColorAt(ref_intersect_pt, reflectionDir,
-//				sources, objects, closestRefObjIdx, ambientLightConst, ++reflectionDepth) *
-//				objects[closestIdx]->getColor().getColorSpecial();
-//		}
-//	}
-// 	// iterate thru all light sources and sum up their effects
-//	// on the primary object's surface color 
-//	for (int k = 0; k < sources.size(); k++) {
-//		glm::vec3 lightPos = sources[k]->getLightPos();
-//		glm::vec3 lightDir = normalize(lightPos - intersectionPos);
-//
-//		// dot product of light and surface normal, use it to multiply with 
-//		// surface color and light color
-//		float cos_theta = dot(objects[closestIdx]->getNormal(intersectionPos), lightDir);
-//
-//		// when angle between normal and light dir is within 90 deg, 
-//		// surface is illuminated, so we attempt to trace to light source. 
-//		if (cos_theta > 0) {
-//			//bool shadowed = false;
-//			// find distance from intersection pt to light source
-//			float intersection_to_light_dist = distance(intersectionPos, lightPos);
-//			// Cast 2ndary rays and do intersection test: 
-//			Ray shadowRay(intersectionPos, lightDir);
-//			std::vector<double> intersectionArr;
-//
-//			// iterate thru all the objects 
-//			for (int idx = 0; idx < objects.size(); idx++) {
-//				double d = objects[idx]->findIntersection(shadowRay);
-//				// collect an array of distance values, including the intersections that 
-//				// completely miss objects, those are stored in Arr as -ve values
-//				// which we filter out later in findClosestObjIndex()
-//				intersectionArr.push_back(d);
-//			}
-//
-//			// TEST FOR SHADOWS -- 2ndary Intersections 
-//			// check if any object intersects with secondary ray:
-//			int closestObjIdx = findClosestObjIndex(intersectionArr);
-//			
-//			if (closestObjIdx < 0) {
-//				// if NO intersection occured--light is not blocked
-//				// Do Lambertian (diffuse) shading:
-//				// pixel Color = sufaceColor (Kd) * LightColor (I) * dot(Normal, lightDir)
-//				// Note: closestIdx is the idx of the closest object we hit that we are generating
-//				// shadow rays from, directed towards the light --> closestIdx != closestObjIdx
-//				// IMPT: the algorithm we use to do intersection test assumes the light to be 
-//				// infinitely far away, so the actual light position is actually a light direction
-//				// i.e. objects can be further from the primary object than the light is and still
-//				// generate shadow on the primary object
-//				finalColor = finalColor + objects[closestIdx]->getColor() * 
-//					sources[k]->getLightColor() * cos_theta;
-//
-//				// The object surface has a specular component (shininess) to it
-//				// i.e. material is shiny (has special component -- note shiny is in range [0,1]
-//				if (objects[closestIdx]->getColor().getColorSpecial() > 0.0f &&
-//					objects[closestIdx]->getColor().getColorSpecial() <= 1.0f) {
-//					glm::vec3 scalar = 2.0f * objectNormal * dot(lightDir, objectNormal);
-//					glm::vec3 reflectionDir = normalize(scalar - lightDir);
-//					// negative of intersectingRayDir == viewDir
-//					double specularVal = dot(reflectionDir, -intersectingRayDir);
-//					if (specularVal > 0.0f) {
-//						// In actuality, the highlights produced without raising
-//						// specularVal to a power (phong exponent) will be too 
-//						// "wide" or "big", and so we narrow it down by raising power 
-//						// reducing the value since its in range [0,1]
-//						specularVal = pow(specularVal, 25);
-//						// this could be the problem, multiplying with finalColor special value
-//						// instead of object's special value
-//						finalColor = finalColor + sources[k]->getLightColor() * 
-//							specularVal * finalColor.getColorSpecial();
-//						// Note: getColorSpecial is the specular coefficient, Ks 
-//						//finalColor = finalColor + sources[k]->getLightColor() *
-//						//	specularVal * objects[closestIdx]->getColor().getColorSpecial();
-//					}
-//				}
-//			}
-//			else {
-//				// intersection occured: no contribution to finalColor 
-//				// by this light source, move on to next light source
-//				continue;
-//			}
-//		}
-//	}
-//	return finalColor.colorClip();
-//}
-
-// passing in a normal, light direction, outputs ratio of light 
+// Computes the ratio of light reflected from transparent
+// object and stored into kr bet. 0 and 1
 // reflected (Kr)
 // incidentDir -- incident ray dir 
 // normal -- surface normal
 // ior -- index of refraction
 // kr -- ratio of reflected light, whereas ratio of refracted is 1 - Kr
-void computeFresnel(const glm::vec3& incident, 
-	glm::vec3& normal, float& ior, float Kr) {
-	// we assume the first refractive index to always be 1.0f (Air)
-	float refIdx1 = 1.0f;
-	float refIdx2 = ior;
-	// clamping the dot product value between -1 and 1, for 
-	// dot(I, N)
-	float cos1 = clamp(-1.0f, 1.0f, dot(incident, normal));
-	// skipped the initial part, just going to compute Kr
-	if (cos1 > 0) std::swap(refIdx1, refIdx2);
-	float sint = refIdx1 / refIdx2 * sqrtf(max(0.0f, 1.0f - (cos1 * cos1)));
-	if (sint >= 1.0f) Kr = 1.0f;
-	// else block 
-	else {
-		cos1 = fabsf(cos1);
-		// computing polarized and parallel components Fr & Fp 
-		// to calculate ratio of reflect & refracted light
-		float cos2 = sqrtf(max(.0f, 1.0f - sint*sint));
-		float Kperp = (refIdx2 * cos1 - refIdx1 * cos2) / (refIdx1*cos2 + refIdx2*cos1);
-		float Kpol = (refIdx1 * cos2 - refIdx2 * cos1) / (refIdx1 * cos2 + refIdx2 * cos1);
-		// the ratio of reflected light, Kr
-		Kr = (Kperp* Kperp + Kpol * Kpol ) * .5f;
-	}
-}
-
-// computes the amount of light reflected from transparent
-// object and stored into kr in range [0.0f, 1.0f]
-void fresnel(const glm::vec3& I, glm::vec3& N, float ior, float kr) {
+void fresnel(const glm::vec3& I, glm::vec3& N, float& ior, float& kr) {
 	// get the refraction index and eta 
 	float etai = 1.0f; float etat = ior; 
 	float cosi = clamp(-1, 1, dot(I, N));
@@ -266,8 +83,10 @@ void fresnel(const glm::vec3& I, glm::vec3& N, float ior, float kr) {
 	// i.e. if 1 - sin(theta2)^2 term is negative
 	// (or) sin(theta2) > 1, then its TIR
 	float sint = eta * sqrtf(max(.0f, ( 1.0f -  cosi * cosi )));
-	if (sint >= 1.0f) {
-		// TIR occurs
+	// either the critical angle is surpassed (sint>=1.0f) or 
+	// obj's refractive index is infinity, i.e. obj is opaque. c/v = Infinity
+	if (sint >= 1.0f || etat == FLT_MAX) {
+		// TIR occurs 
 		kr = 1.0f; 
 	} 
 	// if NOT TIR, theres some portion of 
@@ -275,8 +94,9 @@ void fresnel(const glm::vec3& I, glm::vec3& N, float ior, float kr) {
 	else {
 		float cost = sqrtf(max(0.0f, sqrtf(1 - sint*sint)));
 		cosi = fabsf(cosi);
-		float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
-		float Rp = ((etai * cost) - (etat * cosi)) / ((etai * cost) + (etat * cosi));
+		float Rs = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+		float Rp = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+
 		kr = 0.5f * ((float)Rp * Rp + (float) Rs * Rs); 
 	}
 }
@@ -358,15 +178,16 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 				float kr = 0.0f; // ratio of reflected light
 				float kt;
 				// When primary ray incident on transparent material, 
-				// 2 rays produced: Reflection ray, and refraction ray
+				// 2 rays produced: Reflection and refraction ray
 
-				// Generate refraction ray: 
-				// add bias, test if incoming ray is from inside or outside obj
+				// Generate refraction ray:
+				// Adding bias: test if incoming ray from inside or outside obj
 				glm::vec3 refract_ray_orig = dot(dir, N) < 0.0f ? 
 					hitPoint - N * opts.bias : hitPoint + N * opts.bias;
 				glm::vec3 refract_ray_dir = normalize(refract(dir, N, hitObj->ior));
 				// compute fresnel 
 				fresnel(dir, N, hitObj->ior, kr);
+				// Proportion of light transmitted 
 				kt = 1.0f - kr;
 				// if amt of light reflected is less than 100% 
 				if (kr < 1.0f) {
@@ -374,61 +195,60 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 					hitColor = hitColor + castRay(refract_ray_orig, 
 						refract_ray_dir, sources, objects, opts, ++depth) * kt;
 				}
+				//std::cout << kr << std::endl;
+				
+				// Generate reflection ray: 
+				glm::vec3 reflection_dir = normalize(dir - 2.0f * dot(dir, N) * N);
+				glm::vec3 reflection_ray_origin = (dot(reflection_dir, N) < 0.0f) ?
+					hitPoint - N * opts.bias :
+					hitPoint + N * opts.bias;
+				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * kr;
 
-				// Ratio of light transmitted 
-				//float kt = 1 - kr;
-				//// Generate reflection ray: 
-				//glm::vec3 reflection_dir = normalize(dir - 2.0f * dot(dir, N) * N);
-				//glm::vec3 reflection_ray_origin = (dot(reflection_dir, N) < 0.0f) ?
-				//	hitPoint - N * opts.bias :
-				//	hitPoint + N * opts.bias;
-				//hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * 0.3;
 				break;
 			}
 			case REFLECTION: { // object is perfectly a mirror
 				float kr = .0f;
+
 				// fresnel -- sets the normal, and sets Kr (reflect ratio)
-				//computeFresnel(dir, N, objects[objIndex]->ior, kr);
-				//N = hitObj->getNormal(hitPoint);
+				fresnel(dir, N, hitObj->ior, kr);
+
 				// computer reflection direction
 				glm::vec3 reflection_dir = normalize(dir - 2.0f * dot(dir, N) * N);
-				// reflection ray orig must be biased to avoid shadow acne
+				// reflection_ray_origin biased to avoid shadow acne
 				// if dot(R, N) < 0, ref ray inside the surface, else its outside surface
-				// the ternary condition might be wrong, check again
 				glm::vec3 reflection_ray_origin = (dot(reflection_dir, N) < 0.0f) ? 
 					hitPoint - N*opts.bias : 
 					hitPoint + N*opts.bias;
 
 				// make recursive call to castRay function to sample the color of 
 				// the reflected ray cast out from the hitPoint 
-				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * 1.0f;
+				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * kr;
 				break;	
 			}
 			case DIFFUSE_AND_GLOSSY_AND_REFLECTION: {
 				// REFLECTIVE PART -- apply recursion
 				float kr = .0f;
 				// fresnel -- sets the normal, and sets Kr (reflect ratio)
-				//computeFresnel(dir, N, objects[objIndex]->ior, kr);
+				fresnel(dir, N, hitObj->ior, kr);
 
 				// computer reflection direction
 				glm::vec3 reflection_dir = normalize(dir - 2.0f * dot(dir, N) * N);
-				// reflection ray orig must be biased to avoid shadow acne
+				// reflection_ray_origin biased to avoid shadow acne
 				// if dot(R, N) < 0, ref ray inside the surface, else its outside surface
-				// the ternary condition might be wrong, check again
 				glm::vec3 reflection_ray_origin = (dot(reflection_dir, N) < 0.0f) ?
 					hitPoint - N * opts.bias :
 					hitPoint + N * opts.bias;
 				// make recursive call to castRay function to sample the color of 
 				// the reflected ray cast out from the hitPoint 
-				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * 0.08f;
+				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * kr;
 
-				// DIFFUSE & GLOSSY part, apply Phong -----------------
-				// add ambient component to color
+				// DIFFUSE & GLOSSY part, apply Blinn-Phong
+				// add ambient color component
 				hitColor = hitColor + hitObj->getColor() * opts.ambientLight;
 				// iterate thru each light source and sum their contribution
 				// kd (diffuse color) * I (light intensity) * dot(N, l) +
 				// Ks * I * pow(dot(h, N), phongExponent);
-				Color sumDiffuse = Color();
+				Color sumDiffuse = Color(); // initialized to black
 				Color sumSpecular = Color();
 				glm::vec3 shadowOrigPoint = (dot(dir, N) < 0) ?
 					hitPoint + N * opts.bias :
@@ -459,7 +279,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 					glm::vec3 scalar = 2.0f * N * dot(light_dir, N);
 					glm::vec3 reflectionDir = normalize(scalar - light_dir);
 					sumSpecular = sumSpecular + sources[i]->getLightColor() *
-						pow(max(0.0f, dot(reflectionDir, -dir)), hitObj->phongExponent) *
+						pow(max(0.0f, dot(reflectionDir, -dir)), 200) *
 						((double)1 - inShadow);
 
 				}
@@ -524,10 +344,10 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 	return hitColor.colorClip();
 }
 
-// Checks if the ray intersects with any of the 
-// objects in the scene.
-// Stores intersection data when closest obj is intersected.
-// returns true if intersected an object
+// Given a ray, computes ray intersections with all of the 
+// objects in the scene and
+// Stores intersection info of closest obj intersected.
+// returns true if object intersected
 // stores: tNear -- distance to nearest hitpoint
 // objIndex -- index of nearest object
 // uv -- 
@@ -562,7 +382,6 @@ bool trace(glm::vec3 orig, glm::vec3 dir,
 	return (*hitObject != nullptr); 
 }
 
-
 int main(int argc, char* argv[]) {
 	// checking for memory leaks
 	_CrtMemState sOld;
@@ -576,7 +395,7 @@ int main(int argc, char* argv[]) {
 
 	// Anti-aliasing depth (default: 1) 
 	// 1 pixel, 4 pixels, 9 etc.
-	int aaDepth = 4;
+	int aaDepth = 5;
 
 	// Record rendering time elapsed
 	clock_t t1, t2; 
@@ -602,23 +421,32 @@ int main(int argc, char* argv[]) {
 
 	// Objects
 	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f, prettyGreen, REFLECTION_AND_REFRACTION);
-	Sphere scene_sphere2(glm::vec3(1.7f, -.7f, -2.80f), 0.3f, maroon, DIFFUSE_AND_GLOSSY);
+	scene_sphere.ior = 1.015f;
+	Sphere scene_sphere2(glm::vec3(1.7f, .0f, -2.80f), 0.6f, maroon, REFLECTION_AND_REFRACTION);
+	scene_sphere2.ior = 1.005f;
+	Sphere scene_sphere3(glm::vec3(-1.7f, .0f, -2.80f), 0.6f, maroon, REFLECTION_AND_REFRACTION);
+	scene_sphere3.ior = 2.0f;
+	Sphere scene_sphere4(glm::vec3(.0f, -.7f, -18.3f), 0.3f, maroon, DIFFUSE_AND_GLOSSY);
+	Sphere scene_sphere5(glm::vec3(.0f, -.7f, -1.7f), 0.3f, prettyGreen, DIFFUSE_AND_GLOSSY);
 
 	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(1.0f, -1.0f, .0f), white, DIFFUSE_AND_GLOSSY);
-
-	// Generating Camera  
-	glm::vec3 cameraPos(.0f, .35f, 0.0f);
-	glm::vec3 cameraForward(.0f, .0f, -1.0f);
-	glm::vec3 cameraReferUp(.0f, 1.0f, .0f);
-	glm::vec3 cameraRight(1.0f, .0f, .0f);
-	Camera cam(cameraPos, cameraForward, cameraReferUp);
 
 	// Populate scene objects
 	std::vector<Object*> sceneObjects;
 	sceneObjects.push_back(&scene_sphere);
 	sceneObjects.push_back(&scene_sphere2);
+	sceneObjects.push_back(&scene_sphere3);
+	sceneObjects.push_back(&scene_sphere4);
+	sceneObjects.push_back(&scene_sphere5);
 
 	sceneObjects.push_back(&plane);
+
+	// Generating Camera  
+	glm::vec3 cameraPos(.0f, -.2f, 0.0f);
+	glm::vec3 cameraForward(.0f, .0f, -1.0f);
+	glm::vec3 cameraReferUp(.0f, 1.0f, .0f);
+	glm::vec3 cameraRight(1.0f, .0f, .0f);
+	Camera cam(cameraPos, cameraForward, cameraReferUp);
 
 	// Populate Lights vector
 	std::vector<LightSources*> lights; 
@@ -655,8 +483,8 @@ int main(int argc, char* argv[]) {
 					for (int aax = 0; aax < aaDepth; aax++) {
 						aaIdx = aax + aay * aaDepth;
 						alpha = ((2 * (x + (float)aax / ((float)aaDepth - 1) ) / (float)options.width) - 1.0f)
-							* options.aspectRatio * tan(options.fov / 2);
-						beta = (1 - (2 * (y + (float)aay / ((float)aaDepth - 1)) / (float)options.height)) * tan(options.fov / 2);
+							* options.aspectRatio * tan(options.fov / 2.0f);
+						beta = (1 - (2 * (y + (float)aay / ((float)aaDepth - 1)) / (float)options.height)) * tan(options.fov / 2.0f);
 						
 						rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamLookAt());
 						rayOrigin = cameraPos;
@@ -701,9 +529,9 @@ int main(int argc, char* argv[]) {
 	while (!sceneObjects.empty()) {
 		sceneObjects.pop_back();
 	}
-	
 	sceneObjects.clear();
 
+	// Memory Leak Summary
 	_CrtMemCheckpoint(&sNew); //take a snapchot 
 	if (_CrtMemDifference(&sDiff, &sOld, &sNew)) // if there is a difference
 	{
@@ -714,6 +542,7 @@ int main(int argc, char* argv[]) {
 		OutputDebugString(L"-----------_CrtDumpMemoryLeaks ---------");
 		_CrtDumpMemoryLeaks();
 	}
+
 	return 0;
 }
 
