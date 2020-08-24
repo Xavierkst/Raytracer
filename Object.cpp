@@ -2,7 +2,7 @@
 
 
 Object::Object() : ior(1.3f), material(DIFFUSE_AND_GLOSSY), 
-	kd(0.8f), ks(0.4f), phongExponent(20)
+	kd(0.8f), ks(0.6f), phongExponent(15)
 {
 }
 

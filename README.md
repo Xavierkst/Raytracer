@@ -4,6 +4,7 @@
 * Reflections, recursive Refractions 
 * Fresnel effect
 * Anti-aliasing
+* Soft Shadows (Monte Carlo Lighting)
 ### L & Center: dielectric spheres, Right: A reflective (mirror) sphere 
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/testFile_2_tinted_again.jpg)
 ### 3 dielectric spheres, ea different refractive indices (fresnel seen in rightmost)
@@ -16,7 +17,6 @@
 * Acceleration Structures (bounding volume hierarchy)
 * Triangle Meshes 
 * Spherical Lights 
-* Monte Carlo ray tracing (soft shadows) 
 * Diffuse reflections
 * Texture mapping
 ### Extra Images (tinted/non-tinted dielectrics)

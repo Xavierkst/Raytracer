@@ -18,11 +18,17 @@ public:
 	float fov;
 	float aspectRatio;
 	float ambientLight;
-	glm::vec3 backgroundColor;
+	//glm::vec3 backgroundColor;
 	float bias;
+
+	float sampleNum;
+
+	bool softShadows;
 	// default constructor
 	Options() {
-		aaDepth = 5;
+		softShadows = true;
+		sampleNum = 8;
+		aaDepth = 1;
 		width = 1080;
 		height = 720;
 		aspectRatio = (float)width / (float)height;

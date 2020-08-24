@@ -56,7 +56,7 @@ void writeImage(std::string fileName, float exposure, float gamma, Color* pixelD
 }
 
 // Computes the ratio of light reflected from transparent
-// object and stored into kr bet. 0 and 1
+// object and store it into kr [0,1]
 // reflected (Kr)
 // incidentDir -- incident ray dir 
 // normal -- surface normal
@@ -66,7 +66,7 @@ void fresnel(const glm::vec3& I, glm::vec3& N, float& ior, float& kr) {
 	// get the refraction index and eta 
 	float etai = 1.0f; float etat = ior; 
 	float cosi = clamp(-1, 1, dot(I, N));
-
+	
 	// check if ray is incoming from inside or outside the object
 	// dot(I, N) >= 0 means coming from inside, so we swap the 
 	// ref. indices, also flip the normal
@@ -135,7 +135,8 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 	const std::vector<LightSources*>& sources,
 	const std::vector<Object*>& objects,
 	const Options opts,
-	uint32_t depth) {
+	uint32_t depth,
+	glm::vec2 jitter) {
 	Color hitColor = Color();
 	// check whether depth is greater than maxDepth, assign 
 	// black background if so
@@ -189,7 +190,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 				if (kr < 1.0f) {
 					// cast refraction ray:
 					hitColor = hitColor + hitObj->getColor() * castRay(refract_ray_orig,
-						refract_ray_dir, sources, objects, opts, ++depth) * kt;
+						refract_ray_dir, sources, objects, opts, ++depth, jitter) * kt;
 				}
 				//std::cout << kr << std::endl;
 				
@@ -198,7 +199,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 				glm::vec3 reflection_ray_origin = (dot(reflection_dir, N) < 0.0f) ?
 					hitPoint - N * opts.bias :
 					hitPoint + N * opts.bias;
-				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * kr;
+				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth, jitter) * kr;
 
 				break;
 			}
@@ -218,7 +219,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 
 				// make recursive call to castRay function to sample the color of 
 				// the reflected ray cast out from the hitPoint 
-				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * kr;
+				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth, jitter) * kr;
 				break;	
 			}
 			case DIFFUSE_AND_GLOSSY_AND_REFLECTION: {
@@ -236,7 +237,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 					hitPoint + N * opts.bias;
 				// make recursive call to castRay function to sample the color of 
 				// the reflected ray cast out from the hitPoint 
-				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth) * kr;
+				hitColor = hitColor + castRay(reflection_ray_origin, reflection_dir, sources, objects, opts, ++depth, jitter) * kr;
 
 				// DIFFUSE & GLOSSY part, apply Blinn-Phong
 				// add ambient color component
@@ -299,31 +300,54 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 				for (int i = 0; i < sources.size(); i++) {
 					float tShadowNear = FLT_MAX;
 					Object* shadowObj = nullptr;
+					glm::vec3 light_pos;
 					// get light direction,  
-					glm::vec3 light_dir = sources[i]->getLightPos() - hitPoint;
-					// squared distance from hit point to light source
-					float light_distance_sq = dot(light_dir, light_dir); 
-					light_dir = normalize(light_dir);
+					glm::vec3 light_dir;
+					float light_distance_sq;
+					if (sources[i]->getLightType() == AREA_LIGHT) {
+						// we want to sample at a randomized position on the 
+						// area light =   corner vector (starting pt) +
+						// some dist in a + 
+						// some dist in b
+						 light_pos = sources[i]->getLightPos() + 
+							sources[i]->getEdgeA() * jitter.x + 
+							sources[i]->getEdgeB() * jitter.y;
+						 light_dir = light_pos - hitPoint;
+						 // squared distance from hit point to light source
+						 light_distance_sq = dot(light_dir, light_dir);
+						 light_dir = normalize(light_dir);
+					}
+					else {
+						light_dir = sources[i]->getLightPos() - hitPoint;
+						light_distance_sq = dot(light_dir, light_dir);
+						light_dir = normalize(light_dir);
+					}
 
 					// trace rays back to lightsource and do intersection tests:
-					// If an object intersected by shadow ray, and the object's is closer
+					// If shadowRay intersects an object, and the obj is closer
 					// to the shadowOrigin than the light, the region will be in shadow
 					bool inShadow = trace(shadowOrigPoint, light_dir, objects, 
 						tShadowNear, objIndex, uv, &shadowObj) && (tShadowNear * tShadowNear) < light_distance_sq;
-
-					// calculate diffuse contribution
-					// not sure why you need to include the surface color in this equation
-					// (1- inShadow) checks if i-th light being blocked by an object
-					sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
-						max(0.0f, dot(N, light_dir)) * ((double)1 - inShadow);
-
+					// Also: if the shadow ray is being blocked, and the 
+					// object is reflective and refractive (transparent),
+					// we brighten up the shadow slightly (as light still passes thru)
+					if (shadowObj != nullptr && shadowObj->getMaterialType() == REFLECTION_AND_REFRACTION) {
+						sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
+							max(0.0f, dot(N, light_dir)) * 0.35f /**((float)1 - inShadow)*/;
+					}
+					else {
+						// calculate diffuse contribution
+						// not sure why you need to include the surface color in this equation
+						// (1- inShadow) checks if i-th light being blocked by an object
+						sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
+							max(0.0f, dot(N, light_dir)) * ((double)1 - inShadow);
+					}
 					// calculate specular contribution
 					glm::vec3 scalar = 2.0f * N * dot(light_dir, N);
 					glm::vec3 reflectionDir = normalize(scalar - light_dir);
 					sumSpecular = sumSpecular + sources[i]->getLightColor() * 
 						pow( max(0.0f, dot(reflectionDir, -dir)), hitObj->phongExponent) * 
 						((double)1 - inShadow);
-
 				}
 				hitColor = hitColor + sumDiffuse * hitObj->getColor() * 
 					hitObj->kd + sumSpecular * hitObj->ks;
@@ -399,11 +423,12 @@ int main(int argc, char* argv[]) {
 		colorBuffer[i] = Color(201.0f / 255.0f, 226.0f / 255.0f, 255.0f / 255.0f, .0f);
 	}
 
-	// Colors
+	// Colors ----------------------------------------------------------
 	Color whiteLight(1.0f, 1.0f, 1.0f, 0.0f);
 	// special value of flooring set to 2
 	Color maroon(.5f, .25f, .25f, 0.5f);
-	Color white(1.0f, 1.0f, 1.0f, 2.0f);
+	Color white(1.0f, 1.0f, 1.0f, .0f);
+	Color floor_white(1.0f, 1.0f, 1.0f, 2.0f);
 	Color green(0.5f, 1.0f, 0.5f, 0.5f);
 	Color gray(.5f, .5f, .5f, .0f);
 	Color black(.0f, .0f, .0f, .0f);
@@ -412,38 +437,47 @@ int main(int argc, char* argv[]) {
 	Color pastel_blue(199.0f / 255.0f, 206.0f / 255.0f, 234.0f / 255.0f, .0f);
 	Color mint(181 / 255.0f, 234 / 255.0f, 215 / 255.0f, .0f);
 
-	// Lights
-	Light theLight(glm::vec3(-7.0f, 5.0f, 3.0f), whiteLight);
+	// Lights ----------------------------------------------------------
+	Light theLight(glm::vec3(-7.0f, 5.0f, 3.0f), 
+		whiteLight, POINT_LIGHT, 
+		glm::vec3(.0f), glm::vec3(.0f), glm::vec3(.0f));
 
-	// Objects
+	// area light
+	glm::vec3 edge_a(-5.0f, .0f, .0f);
+	glm::vec3 edge_b(0.f, .0f, -5.0f);
+	glm::vec3 corner(.0f, 10.0f, -4.0f);
+	Light areaLight(corner,
+		whiteLight, AREA_LIGHT, corner, edge_a, edge_b);
+
+	// Objects ----------------------------------------------------------
 	// center
 	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f, 
-		pastel_blue, REFLECTION_AND_REFRACTION);
+		white, REFLECTION_AND_REFRACTION);
 	scene_sphere.ior = 1.04f;
 	// right
-	Sphere scene_sphere2(glm::vec3(1.7f, -.3f, -2.80f), 
+	Sphere scene_sphere2(glm::vec3(1.7f, -.4f, -2.80f), 
 		0.6f, maroon, REFLECTION);
 	scene_sphere2.ior = FLT_MAX;
 	// left
-	Sphere scene_sphere3(glm::vec3(-1.7f, -.3f, -2.80f), 
+	Sphere scene_sphere3(glm::vec3(-1.7f, -.4f, -2.80f), 
 		0.6f, mint, REFLECTION_AND_REFRACTION);
 	scene_sphere3.ior = 3.0f;
 	// b.g. mid-left
-	Sphere scene_sphere4(glm::vec3(-.4f, -.7f, -5.3f), 0.35f, 
+	Sphere scene_sphere4(glm::vec3(-.4f, -.65f, -5.3f), 0.35f, 
 		pastel_pink, DIFFUSE_AND_GLOSSY);
 	// b.g. mid-right
-	Sphere scene_sphere5(glm::vec3(.4f, -.7f, -5.3f), 0.35f, 
+	Sphere scene_sphere5(glm::vec3(.4f, -.65f, -5.3f), 0.35f, 
 		pastel_blue, DIFFUSE_AND_GLOSSY);
 	// foreground left
-	Sphere scene_sphere6(glm::vec3(-.5f, -.7f, -1.7f), 0.25f,
+	Sphere scene_sphere6(glm::vec3(-.5f, -.75f, -1.7f), 0.25f,
 		pastel_blue, DIFFUSE_AND_GLOSSY);
 	// b.g. left most
 	Sphere scene_sphere7(glm::vec3(-3.9f, .0f, -5.3f), 0.35f,
 		pastel_pink, DIFFUSE_AND_GLOSSY);
 
-	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(1.0f, -1.0f, .0f), white, DIFFUSE_AND_GLOSSY);
+	Plane plane(glm::vec3(.0f, 1.0f, .0f), glm::vec3(1.0f, -1.0f, .0f), floor_white, DIFFUSE_AND_GLOSSY);
 
-	// Populate scene objects
+	// Populate scene objects ----------------------------------------------------------
 	std::vector<Object*> sceneObjects;
 	sceneObjects.push_back(&scene_sphere);
 	sceneObjects.push_back(&scene_sphere2);
@@ -455,40 +489,90 @@ int main(int argc, char* argv[]) {
 
 	sceneObjects.push_back(&plane);
 
-	// Generating Camera  
+	// Populate Lights vector ----------------------------------------------------------
+	std::vector<LightSources*> lights;
+	//lights.push_back(&theLight);
+	lights.push_back(&areaLight);
+
+	// Generating Camera ----------------------------------------------------------  
 	glm::vec3 cameraPos(.0f, -.2f, 0.0f);
 	glm::vec3 cameraForward(.0f, .0f, -1.0f);
 	glm::vec3 cameraReferUp(.0f, 1.0f, .0f);
 	glm::vec3 cameraRight(1.0f, .0f, .0f);
 	Camera cam(cameraPos, cameraForward, cameraReferUp);
 
-	// Populate Lights vector
-	std::vector<LightSources*> lights; 
-	lights.push_back(&theLight);
-
 	float alpha, beta;
 	glm::vec3 rayDir, rayOrigin;
 	// anti aliasing color buffer
 	Color* tempColor = new Color[options.aaDepth * options.aaDepth];
 	int aaIdx = 0; // anti aliasing index
+	// generate 2 size n^2 arrays holding randomized values in range [0, 1)
+	glm::vec2* r = new glm::vec2[options.sampleNum * options.sampleNum];
+	glm::vec2* s = new glm::vec2[options.sampleNum * options.sampleNum];
 
+
+	// Begin rendering ----------------------------------------------------------
 	for (int y = 0; y < options.height; y++) {
 		for (int x = 0; x < options.width; x++) {
 			Color pixelColor;
-			// Render w/o anti-aliasing
-			if (options.aaDepth == 1) {
-				alpha = ((2 * (x + 0.5) / (float)options.width) - 1.0f)
-					* options.aspectRatio * tan(options.fov / 2);
-				beta = (1 - (2 * (y + 0.5) / (float)options.height)) 
-					* tan(options.fov / 2);
-				rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamLookAt());
-				rayOrigin = cameraPos;
-				Ray camRay(rayOrigin, rayDir); // generate cam ray
-				
-				// castRay function (replaces the getColor() function)
-				// this replaces getColor function
-				pixelColor = castRay(rayOrigin, rayDir, lights,sceneObjects, options, STARTING_DEPTH);
+			// populate the arrays with values
+			for (int idx = 0; idx < options.sampleNum * options.sampleNum; ++idx) {
+				float rVal = rand() / RAND_MAX; // generates a value in range [0, 1)
+				r[idx].x = ((float)rand()) / RAND_MAX; 
+				s[idx].x = ((float)rand()) / RAND_MAX; 
+				r[idx].y = /*((float)rand()) / RAND_MAX*/s[idx].x;
+				s[idx].y = /*((float)rand()) / RAND_MAX*/r[idx].x;
+			}
+			// shuffle array s[] -- shirley shuffle method
+			// reduce/eliminates coherence between r[] and s[] float values
+			// for more randomized shadow noise
+			//for (int p = options.sampleNum * options.sampleNum - 1; p > 0 ; --p) {
+			//	// choose rand num in [0, p]
+			//	float number = ((float) rand() / (float) RAND_MAX) - .001f;
+			//	int j = (p + 1) * number;
+			//	//std::cout << s[p].x << " " << s[p].y << " and " << s[j].x << " " << s[j].y << std::endl;
+			//	std::swap(s[p], s[j]);
+			//	//std::swap(r[p], r[j]);
+			//	//std::cout << s[p].x << " " << s[p].y << " and " << s[j].x << " " << s[j].y << std::endl;
+			//}
 
+			// Render w/o anti-aliasing
+			if (options.aaDepth == 1 && options.softShadows == false) {
+					alpha = ((2 * (x + .5f) / (float)options.width) - 1.0f)
+						* options.aspectRatio * tan(options.fov / 2);
+					beta = (1 - (2 * (y + 0.5) / (float)options.height))
+						* tan(options.fov / 2);
+					rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamLookAt());
+					rayOrigin = cameraPos;
+					Ray camRay(rayOrigin, rayDir); // generate cam ray
+
+					// castRay function (replaces the getColor() function)
+					// this replaces getColor function
+					pixelColor = castRay(rayOrigin, rayDir, lights, sceneObjects, options, STARTING_DEPTH, glm::vec2(.0f));
+			}
+			else if (options.aaDepth == 1 && options.softShadows == true) {
+				for (int l = 0; l < options.sampleNum * options.sampleNum; ++l) {
+					// Randomized components to jitter the rays casted 
+					// into each pixel
+					alpha = ((2 * (x + r[l].x) / (float)options.width) - 1.0f)
+						* options.aspectRatio * tan(options.fov / 2);
+					beta = (1 - (2 * (y + r[l].y) / (float)options.height))
+						* tan(options.fov / 2);
+							/*alpha = ((2 * (x + .5f) / (float)options.width) - 1.0f)
+								* options.aspectRatio * tan(options.fov / 2);
+							beta = (1 - (2 * (y + 0.5) / (float)options.height))
+								* tan(options.fov / 2);*/
+							rayDir = normalize(glm::vec3(alpha, beta, .0f) + cam.getCamLookAt());
+							rayOrigin = cameraPos;
+							Ray camRay(rayOrigin, rayDir); // generate cam ray
+
+							// castRay function (replaces the getColor() function)
+							// this replaces getColor function
+							pixelColor = pixelColor + castRay(rayOrigin, rayDir, lights, sceneObjects, options, STARTING_DEPTH, s[l]);
+				}
+				// average out the color sampled from n^2 rays cast each indiv. pixel
+				// by dividing pixelColor / n^2 
+				pixelColor = pixelColor * (float) (1.0f / (float)(options.sampleNum * options.sampleNum));
 			}
 			// Render with Anti-aliasing 
 			else {
@@ -507,7 +591,7 @@ int main(int argc, char* argv[]) {
 						// castRay function (replaces the getColor() function)
 						// this replaces getColor function
 						// getColorAt returns the clipped color
-						Color tempCol = castRay(rayOrigin, rayDir, lights, sceneObjects, options, STARTING_DEPTH);
+						Color tempCol = castRay(rayOrigin, rayDir, lights, sceneObjects, options, STARTING_DEPTH, glm::vec2(.0f));
 						tempColor[aaIdx] = tempCol;
 					}
 				}
@@ -540,6 +624,8 @@ int main(int argc, char* argv[]) {
 	// Free memory
 	delete[] colorBuffer;
 	delete[] tempColor;
+	delete[] r; 
+	delete[] s;
 	while (!sceneObjects.empty()) {
 		sceneObjects.pop_back();
 	}
