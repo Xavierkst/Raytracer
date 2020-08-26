@@ -19,7 +19,7 @@ public:
 
 	virtual glm::vec3 getEdgeA();
 	virtual glm::vec3 getEdgeB();
-
+	
 };
 
 #endif

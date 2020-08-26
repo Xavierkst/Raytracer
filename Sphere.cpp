@@ -6,11 +6,18 @@ Sphere::Sphere() {
 	color = Color(0.5f, .5f, .5f, 0);
 }
 
-Sphere::Sphere(glm::vec3 origin, float r, Color c, materialType mat) {
+Sphere::Sphere(glm::vec3 origin, float r, Color c, float refractIdx, materialType mat) {
 	radius = r;
 	sphereOrig = origin;
 	color = c;
 	material = mat;
+	ior = refractIdx;
+	// Opaque objects have infinite idx of refrac
+	if (mat == REFLECTION ||
+		mat == DIFFUSE_AND_GLOSSY ||
+		mat == DIFFUSE_AND_GLOSSY_AND_REFLECTION) {
+		ior = FLT_MAX;
+	}
 }
 
 glm::vec3 Sphere::getSpherePos() {

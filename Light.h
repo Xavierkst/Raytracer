@@ -36,6 +36,7 @@ public:
 	glm::vec3 getEdgeA();
 	glm::vec3 getEdgeB();
 
+	//glm::vec3 findIntersection()
 };
 
 #endif

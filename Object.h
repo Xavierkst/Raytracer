@@ -10,7 +10,8 @@ enum materialType {
 	REFLECTION, 
 	DIFFUSE_AND_GLOSSY, 
 	DIFFUSE_AND_GLOSSY_AND_REFLECTION, 
-	DIFFUSE
+	DIFFUSE,
+	LIGHT
 };
 
 class Object {

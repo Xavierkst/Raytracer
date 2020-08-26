@@ -15,7 +15,8 @@ private:
 public:
 
 	Sphere();
-	Sphere(glm::vec3 origin, float r, Color c, materialType mat);
+	Sphere(glm::vec3 origin, float r, Color c, float refractIdx, materialType mat);
+
 
 	glm::vec3 getSpherePos();
 	Color getColor();

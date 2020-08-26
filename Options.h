@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 
-#define MAX_RECURSION_DEPTH 5
+#define MAX_RECURSION_DEPTH 8
 #define STARTING_DEPTH 0
 
 class Options {
@@ -18,7 +18,7 @@ public:
 	float fov;
 	float aspectRatio;
 	float ambientLight;
-	//glm::vec3 backgroundColor;
+	Color backgroundColor;
 	float bias;
 
 	float sampleNum;
@@ -27,7 +27,7 @@ public:
 	// default constructor
 	Options() {
 		softShadows = true;
-		sampleNum = 8;
+		sampleNum = 1;
 		aaDepth = 1;
 		width = 1080;
 		height = 720;
@@ -35,6 +35,7 @@ public:
 		fov = M_PI * (90.0f / 180.0f);
 		ambientLight = 0.4f;
 		bias = 0.01f;
+		backgroundColor = Color(201.0f / 255.0f, 226.0f / 255.0f, 255.0f / 255.0f, .0f);
 	}
 };
 #endif 
