@@ -6,6 +6,7 @@
 * Anti-aliasing
 * Soft shadows (Monte Carlo lighting) & Area lights
 ### L & Center: dielectric spheres, Right: A reflective (mirror) sphere 
+![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/testFile_AA_8_rectangle_2.jpg)
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/testFile_AA_8_rectangle.jpg)
 ### 3 dielectric spheres, ea different refractive indices (fresnel seen in rightmost)
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/testFile_1.jpg)

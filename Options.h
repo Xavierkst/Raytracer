@@ -27,7 +27,7 @@ public:
 	// default constructor
 	Options() {
 		softShadows = true;
-		sampleNum = 1;
+		sampleNum = 4;
 		aaDepth = 1;
 		width = 1080;
 		height = 720;

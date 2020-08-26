@@ -29,13 +29,13 @@ namespace scene {
 	// Objects ----------------------------------------------------------
 	// center
 	Sphere scene_sphere(glm::vec3(.0f, .0f, -3.0f), 1.0f,
-		pastel_blue, 6.0f, REFLECTION_AND_REFRACTION);
+		pastel_blue, 3.3f, REFLECTION_AND_REFRACTION);
 	// right
 	Sphere scene_sphere2(glm::vec3(1.7f, -.4f, -2.80f),
 		0.6f, maroon, FLT_MAX, REFLECTION);
 	// left
 	Sphere scene_sphere3(glm::vec3(-1.7f, -.4f, -2.80f),
-		0.6f, mint, 5.0f, REFLECTION_AND_REFRACTION);
+		0.6f, mint, 1.03f, REFLECTION_AND_REFRACTION);
 
 	// b.g. mid-left
 	Sphere scene_sphere4(glm::vec3(-.4f, -.65f, -5.3f), 0.35f,
@@ -53,7 +53,7 @@ namespace scene {
 	// area light
 	glm::vec3 edge_a(-1.0f, .0f, .0f);
 	glm::vec3 edge_b(0.f, .0f, -1.0f);
-	glm::vec3 corner(.5f, 1.9f, -1.f);
+	glm::vec3 corner(.5f, 1.9f, -1.5f);
 	// 1 corner and 2 edges
 	Rect rec(glm::vec3(corner.x, corner.y + .1, corner.z),
 		edge_a, edge_b, whiteLight, LIGHT);
