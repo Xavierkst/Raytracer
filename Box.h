@@ -1,24 +1,22 @@
-#ifndef _RECTANGLE_H_
-#define _RECTANGLE_H_
+#ifndef _BOX_H_
+#define _BOX_H_
 
 #include "Object.h"
 
-class Rect : public Object {
-private:
-
-	glm::vec3 corner;
-	glm::vec3 edge_1;
-	glm::vec3 edge_2;
+class Box : public Object {
+private: 
 	Color color;
 	glm::vec3 normal;
+public:
+	// Min and max bound planes
+	glm::vec3 bounds[2];
 
-public: 
-	Rect();
+	Box();
+	Box(glm::vec3 min, glm::vec3 max, Color c, materialType mat);
 
-	Rect(glm::vec3 c, glm::vec3 e_a, glm::vec3 e_b, Color col, materialType mat);
-
-	bool findIntersection(glm::vec3 orig, glm::vec3 dir,
-		float& tNear, int& index, glm::vec2& uv) const;
+	bool findIntersection(glm::vec3 orig,
+		glm::vec3 dir, float& tNear,
+		int& index, glm::vec2& uv) const;
 
 	Color getColor();
 	void setColor(float r, float g, float b);
@@ -30,7 +28,5 @@ public:
 		glm::vec2& st);
 
 	materialType getMaterialType();
-
 };
-
 #endif

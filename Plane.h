@@ -27,7 +27,7 @@ public:
 	bool findIntersection(glm::vec3 orig, glm::vec3 dir,
 		float& tNear, int& index, glm::vec2& uv) const;
 
-	void getSurfaceProperties(const glm::vec3& P,
+	void getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig,
 		const glm::vec3& I, const int& index,
 		const glm::vec2& uv, glm::vec3& N,
 		glm::vec2& st);

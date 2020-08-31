@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 
-#define MAX_RECURSION_DEPTH 8
+#define MAX_RECURSION_DEPTH 4
 #define STARTING_DEPTH 0
 
 class Options {
@@ -27,7 +27,7 @@ public:
 	// default constructor
 	Options() {
 		softShadows = true;
-		sampleNum = 4;
+		sampleNum = 2;
 		aaDepth = 1;
 		width = 1080;
 		height = 720;

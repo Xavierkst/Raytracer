@@ -65,5 +65,8 @@ glm::vec3 Light::setLightPos(glm::vec3 pos)
 }
 
 glm::vec3 Light::getLightPos() {
-	return lightPos;
+	if (type == AREA_LIGHT) {
+		return corner;
+	}
+	else return lightPos;
 }

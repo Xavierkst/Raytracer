@@ -100,8 +100,8 @@ void writeImage(std::string fileName, float exposure, float gamma, Color* pixelD
 // Computes the ratio of light reflected from transparent
 // object and store it into kr [0,1]
 // reflected (Kr)
-// incidentDir -- incident ray dir 
-// normal -- surface normal
+// I -- incident ray dir 
+// N -- surface normal
 // ior -- index of refraction
 // kr -- ratio of reflected light, whereas ratio of refracted is 1 - Kr
 void fresnel(const glm::vec3& I, glm::vec3& N, float& ior, float& kr) {
@@ -182,6 +182,75 @@ void reflect(glm::vec3 ray_dir, glm::vec3 N, glm::vec3 hitPoint,
 		 hitPoint + N * opts.bias;
  };
 
+Color phongShading(const glm::vec3 dir, const glm::vec3 N, const glm::vec3 hitPoint, Object* hitObj, const std::vector<LightSources*>& sources,
+	const std::vector<Object*>& objects, const Options& opts, Color& hitColor, glm::vec2& jitter) {
+
+	// DIFFUSE & GLOSSY part, apply Blinn-Phong
+	// ambient color component
+	hitColor = hitColor + hitObj->getColor() * opts.ambientLight;
+	// iterate thru each light source and sum their contribution
+	// kd (diffuse color) * I (light intensity) * dot(N, l) +
+	// Ks * I * pow(dot(h, N), phongExponent);
+	Color sumDiffuse = Color(); // initialized to black
+	Color sumSpecular = Color();
+	glm::vec3 shadowOrigPoint = (dot(dir, N) < 0) ?
+		hitPoint + N * opts.bias :
+		hitPoint - N * opts.bias;
+	for (int i = 0; i < sources.size(); i++) {
+		float tShadowNear = FLT_MAX;
+		Object* shadowObj = nullptr;
+		glm::vec3 light_pos;
+		glm::vec3 light_dir;
+		float light_distance_sq;
+		if (sources[i]->getLightType() == AREA_LIGHT) {
+			// we want to sample at a randomized position on the 
+			// area light =   corner vector (starting pt) +
+			// some dist in a + 
+			// some dist in b
+			light_pos = sources[i]->getLightPos() +
+				sources[i]->getEdgeA() * jitter.x +
+				sources[i]->getEdgeB() * jitter.y;
+			light_dir = light_pos - hitPoint;
+			// squared distance from hit point to light source
+			light_distance_sq = dot(light_dir, light_dir);
+			light_dir = normalize(light_dir);
+		}
+		else {
+			// get light direction,  
+			glm::vec3 light_dir = sources[i]->getLightPos() - hitPoint;
+			// squared distance from hit point to light source
+			light_distance_sq = dot(light_dir, light_dir);
+			light_dir = normalize(light_dir);
+		}
+		// trace rays back to lightsource and do intersection tests:
+		// If an object intersected by shadow ray, and the object's is closer
+		// to the shadowOrigin than the light, the region will be in shadow
+		glm::vec2 uv;
+		int objIndex;
+		bool inShadow = trace(shadowOrigPoint, light_dir, objects,
+			tShadowNear, objIndex, uv, &shadowObj) && (tShadowNear * tShadowNear) < light_distance_sq;
+
+		// calculate diffuse contribution
+		// not sure why you need to include the surface color in this equation
+		// (1- inShadow) checks if i-th light being blocked by an object
+		sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
+			max(0.0f, dot(N, light_dir)) * ((double)1 - inShadow);
+		if (hitObj->getMaterialType() != DIFFUSE) {
+			// calculate specular contribution
+			glm::vec3 scalar = 2.0f * N * dot(light_dir, N);
+			glm::vec3 reflectionDir = normalize(scalar - light_dir);
+			sumSpecular = sumSpecular + sources[i]->getLightColor() *
+				pow(max(0.0f, dot(reflectionDir, -dir)), 200) *
+				((double)1 - inShadow);
+		}
+	}
+
+	hitColor = hitColor + sumDiffuse * hitObj->getColor() *
+		hitObj->kd + sumSpecular * hitObj->ks;
+
+	return hitColor;
+}
+
 // Given a ray position & dir, casts the ray into the scene
 // intersecting with scene objects (Sometimes recursively) and 
 // evaluating and returning the final color onto each pixel
@@ -223,7 +292,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 		}
 
 		// getSurfaceProperties returns normal of the surface only (for now)
-		hitObj->getSurfaceProperties(hitPoint, dir, objIndex, uv, N, st);
+		hitObj->getSurfaceProperties(hitPoint, orig, dir, objIndex, uv, N, st);
 		switch (hitObj->getMaterialType()) {
 			case LIGHT: {
 				hitColor = hitColor + hitObj->getColor();
@@ -283,6 +352,7 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 				// the reflected ray cast out from the hitPoint 
 				hitColor = hitColor + castRay(reflection_ray_origin, 
 					reflection_dir, sources, objects, opts, ++depth, jitter) * kr;
+
 
 				// DIFFUSE & GLOSSY part, apply Blinn-Phong
 				// ambient color component
@@ -347,68 +417,80 @@ Color castRay(const glm::vec3& orig, const glm::vec3& dir,
 			}
 			// default material is DIFFUSE_AND_GLOSSY 
 			// Apply Blinn Phong shading		
+			case DIFFUSE_AND_GLOSSY: {
+				// apply Phong shading
+				hitColor = phongShading(dir, N, hitPoint, hitObj, sources, objects, opts, hitColor, jitter);
+				break;
+			}
 			default: {
-				// add ambient component to color
-				hitColor = hitObj->getColor() * opts.ambientLight;
-				// iterate thru each light source and sum their contribution
-				// kd (diffuse color) * I (light intensity) * dot(N, l) +
-				// Ks * I * pow(dot(h, N), phongExponent);
-				Color sumDiffuse = Color();
-				Color sumSpecular = Color();
-				glm::vec3 shadowOrigPoint = (dot(dir, N) < 0) ?
-					hitPoint + N * opts.bias : 
-					hitPoint - N * opts.bias;
-				for (int i = 0; i < sources.size(); i++) {
-					float tShadowNear = FLT_MAX;
-					Object* shadowObj = nullptr;
-					glm::vec3 light_pos;
-					// get light direction,  
-					glm::vec3 light_dir;
-					float light_distance_sq;
-					if (sources[i]->getLightType() == AREA_LIGHT) {
-						// Sample at a randomized point on the area light
-						// using the jittered components
-						 light_pos = sources[i]->getLightPos() + 
-							sources[i]->getEdgeA() * jitter.x + 
-							sources[i]->getEdgeB() * jitter.y;
-						 light_dir = light_pos - hitPoint;
-						 // squared distance from hit point to light source
-						 light_distance_sq = dot(light_dir, light_dir);
-						 light_dir = normalize(light_dir);
-					}
-					else {
-						light_dir = sources[i]->getLightPos() - hitPoint;
-						light_distance_sq = dot(light_dir, light_dir);
-						light_dir = normalize(light_dir);
-					}
+				// default implies DIFFUSE material right now
+				hitColor = phongShading(dir, N, hitPoint, hitObj, sources, objects, opts, hitColor, jitter);
+				//// add ambient component to color
+				//hitColor = hitObj->getColor() * opts.ambientLight;
+				//// iterate thru each light source and sum their contribution
+				//// kd (diffuse color) * I (light intensity) * dot(N, l) +
+				//// Ks * I * pow(dot(h, N), phongExponent);
+				//Color sumDiffuse = Color();
+				//Color sumSpecular = Color();
+				////if (hitObj->)
+				////glm::vec3 shadowOrigPoint = (dot(dir, N) < 0) ?
+				////	hitPoint + N * opts.bias :
+				////	hitPoint - N * opts.bias;
+				//glm::vec3 shadowOrigPoint = hitPoint + N * opts.bias;
+				//for (int i = 0; i < sources.size(); i++) {
+				//	float tShadowNear = FLT_MAX;
+				//	Object* shadowObj = nullptr;
+				//	glm::vec3 light_pos;
+				//	// get light direction,  
+				//	glm::vec3 light_dir;
+				//	float light_distance_sq;
+				//	if (sources[i]->getLightType() == AREA_LIGHT) {
+				//		// Sample at a randomized point on the area light
+				//		// using the jittered components
+				//		light_pos = sources[i]->getLightPos() +
+				//			sources[i]->getEdgeA() * jitter.x +
+				//			sources[i]->getEdgeB() * jitter.y;
+				//		light_dir = light_pos - hitPoint;
+				//		// squared distance from hit point to light source
+				//		light_distance_sq = dot(light_dir, light_dir);
+				//		light_dir = normalize(light_dir);
+				//	}
+				//	else {
+				//		light_dir = sources[i]->getLightPos() - hitPoint;
+				//		light_distance_sq = dot(light_dir, light_dir);
+				//		light_dir = normalize(light_dir);
+				//	}
 
-					// trace rays back to lightsource and do intersection tests:
-					// If shadowRay intersects an object, and the obj is closer
-					// to the shadowOrigin than the light, region will be in shadow
-					bool inShadow = trace(shadowOrigPoint, light_dir, objects, 
-						tShadowNear, objIndex, uv, &shadowObj) && (tShadowNear * tShadowNear) < light_distance_sq;
-					// Also: if the shadow ray is being blocked, and the 
-					// object is reflective and refractive (transparent),
-					// we brighten up the shadow slightly (as light still passes thru)
-					if (shadowObj != nullptr && shadowObj->getMaterialType() == REFLECTION_AND_REFRACTION) {
-						sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
-							max(0.0f, dot(N, light_dir)) * 0.35f /**((float)1 - inShadow)*/;
-					}
-					else {
-						// calculate diffuse contribution
-						// (1- inShadow) checks if i-th light being blocked by an object
-						sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
-							max(0.0f, dot(N, light_dir)) * ((double)1 - inShadow);
-					}
-					// calculate specular contribution
-					glm::vec3 scalar = 2.0f * N * dot(light_dir, N);
-					glm::vec3 reflectionDir = normalize(scalar - light_dir);
-					sumSpecular = sumSpecular + sources[i]->getLightColor() * 
-						pow(max(0.0f, dot(reflectionDir, -dir)), hitObj->phongExponent) * 
-						((double)1 - inShadow);
-				}
-				hitColor = hitColor + sumDiffuse * hitObj->getColor() * 
-					hitObj->kd + sumSpecular * hitObj->ks;
+				//	// trace rays back to lightsource and do intersection tests:
+				//	// If shadowRay intersects an object, and the obj is closer
+				//	// to the shadowOrigin than the light, region will be in shadow
+				//	bool inShadow = trace(shadowOrigPoint, light_dir, objects,
+				//		tShadowNear, objIndex, uv, &shadowObj) && (tShadowNear * tShadowNear) < light_distance_sq;
+				//	// Also: if the shadow ray is being blocked, and the 
+				//	// object is reflective and refractive (transparent),
+				//	// we brighten up the shadow slightly (as light still passes thru) 
+				//	// --> maybe use last obj's Kr constant as the scalar
+				//	if (shadowObj != nullptr && shadowObj->getMaterialType() == REFLECTION_AND_REFRACTION) {
+				//		float kr;
+				//		/*fresnel(dir, N, hitObj->ior, kr);*/
+				//		sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
+				//			max(0.0f, dot(N, light_dir)) * 0.4f;
+				//	}
+				//	else {
+				//		// calculate diffuse contribution
+				//		// (1- inShadow) checks if i-th light being blocked by an object
+				//		sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
+				//			max(0.0f, dot(N, light_dir)) * ((double)1 - inShadow);
+				//	}
+				//	//// calculate specular contribution
+				//	//glm::vec3 scalar = 2.0f * N * dot(light_dir, N);
+				//	//glm::vec3 reflectionDir = normalize(scalar - light_dir);
+				//	//sumSpecular = sumSpecular + sources[i]->getLightColor() *
+				//	//	pow(max(0.0f, dot(reflectionDir, -dir)), hitObj->phongExponent) *
+				//	//	((double)1 - inShadow);
+				//}
+
+
 				break;
 			}
 		}
@@ -444,16 +526,25 @@ int main(int argc, char* argv[]) {
 
 	// Populate scene objects -----------------------------------------------------
 	std::vector<Object*> sceneObjects;
-	sceneObjects.push_back(&scene_sphere);
-	sceneObjects.push_back(&scene_sphere2);
-	sceneObjects.push_back(&scene_sphere3);
-	sceneObjects.push_back(&scene_sphere4);
-	sceneObjects.push_back(&scene_sphere5);
-	sceneObjects.push_back(&scene_sphere6);
-	sceneObjects.push_back(&scene_sphere7);
+	//sceneObjects.push_back(&scene_sphere);
+	//sceneObjects.push_back(&scene_sphere2);
+	//sceneObjects.push_back(&scene_sphere3);
+	//sceneObjects.push_back(&scene_sphere4);
+	//sceneObjects.push_back(&scene_sphere5);
+	//sceneObjects.push_back(&scene_sphere6);
+	//sceneObjects.push_back(&scene_sphere7);
 
 	sceneObjects.push_back(&plane);
-	sceneObjects.push_back(&rec);
+	//sceneObjects.push_back(&plane2);
+	////sceneObjects.push_back(&plane3);
+	////sceneObjects.push_back(&plane4);
+	//sceneObjects.push_back(&plane5);
+	//sceneObjects.push_back(&plane6);
+
+	//sceneObjects.push_back(&rec);
+	sceneObjects.push_back(&box);
+	sceneObjects.push_back(&box2);
+
 	// Populate Lights  ----------------------------------------------------------
 	std::vector<LightSources*> lights;
 	//lights.push_back(&theLight);
@@ -482,8 +573,9 @@ int main(int argc, char* argv[]) {
 			// shuffle array s[] -- shirley shuffle method
 			// reduce/eliminates coherence between r[] and s[] float values
 			// for more randomized shadow noise
-			shuffleFloatArray(s, options.sampleNum);
-
+			if (options.sampleNum > 1) {
+				shuffleFloatArray(s, options.sampleNum);
+			}
 			float alpha, beta;
 			glm::vec3 rayDir, rayOrigin;
 			// Render w/o anti-aliasing & soft shadows

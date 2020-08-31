@@ -1,7 +1,7 @@
 #include "Object.h"
 
 
-Object::Object() : ior(1.3f), material(DIFFUSE_AND_GLOSSY), 
+Object::Object() : ior(1.3f), material(DIFFUSE), 
 	kd(0.8f), ks(0.6f), phongExponent(15)
 {
 }
@@ -25,11 +25,9 @@ glm::vec3 Object::getNormal(glm::vec3 point) {
 	return glm::vec3(.0f);
 }
 
-void Object::getSurfaceProperties(const glm::vec3& P, 
-	const glm::vec3& I, const int& index, 
-	const glm::vec2& uv, glm::vec3& N, 
-	glm::vec2& st)
+void Object::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig, const glm::vec3& I, const int& index, const glm::vec2& uv, glm::vec3& N, glm::vec2& st)
 {
+	return;
 }
 
 materialType Object::getMaterialType() {

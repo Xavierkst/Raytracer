@@ -19,7 +19,7 @@ Rect::Rect(glm::vec3 c, glm::vec3 e_a, glm::vec3 e_b, Color col, materialType ma
     material = mat;
 }
 
-bool Rect::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear, int& index, glm::vec2& uv) const
+bool Rect::findIntersection(glm::vec3 orig,  glm::vec3 dir, float& tNear, int& index, glm::vec2& uv) const
 {   
     glm::vec3 N = this->normal;
     // use the plane intersection routine to see if intersects plane
@@ -46,11 +46,9 @@ bool Rect::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear, int& in
 
     float length_1 = dot(p0p, edge_1) / dot(edge_1, edge_1);
     float length_2 = dot(p0p, edge_2) / dot(edge_2, edge_2);
-    float edge_1_len = length(edge_1);
-    float edge_2_len = length(edge_2);
-    if ((0.0f < length_1 && length_1 <= length(edge_1)) && ((0.0f < length_2) && (length_2 <= length(edge_2))) ) {
-        float num = 1.0f;
-    }
+    //float edge_1_len = length(edge_1);
+    //float edge_2_len = length(edge_2);
+
     // If the length of both projections are within the lengths of the 
     // edge vectors--there will be intersection. If not, no intersection
     return (0.0f < length_1 && length_1 <= length(edge_1)) && ((0.0f < length_2) && (length_2 <= length(edge_2)));
@@ -74,7 +72,7 @@ glm::vec3 Rect::getNormal(glm::vec3 point)
     return normal;
 }
 
-void Rect::getSurfaceProperties(const glm::vec3& P, const glm::vec3& I, const int& index, const glm::vec2& uv, glm::vec3& N, glm::vec2& st)
+void Rect::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig, const glm::vec3& I, const int& index, const glm::vec2& uv, glm::vec3& N, glm::vec2& st)
 {
     return;
 }

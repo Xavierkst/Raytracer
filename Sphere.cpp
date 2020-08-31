@@ -43,7 +43,7 @@ glm::vec3 Sphere::getNormal(glm::vec3 point)
 	return normalize(point - this->getSpherePos());
 }
 
-void Sphere::getSurfaceProperties(const glm::vec3& P, const glm::vec3& I, const int& index, const glm::vec2& uv, glm::vec3& N, glm::vec2& st)
+void Sphere::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig, const glm::vec3& I, const int& index, const glm::vec2& uv, glm::vec3& N, glm::vec2& st)
 {
 	N = normalize(P - getSpherePos());
 }
