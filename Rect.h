@@ -15,7 +15,8 @@ private:
 public: 
 	Rect();
 
-	Rect(glm::vec3 c, glm::vec3 e_a, glm::vec3 e_b, Color col, materialType mat);
+	Rect(glm::vec3 c, glm::vec3 e_a, 
+		glm::vec3 e_b, Color col, materialType mat);
 
 	bool findIntersection(glm::vec3 orig, glm::vec3 dir,
 		float& tNear, int& index, glm::vec2& uv) const;

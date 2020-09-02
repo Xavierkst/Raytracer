@@ -6,7 +6,9 @@ Sphere::Sphere() {
 	color = Color(0.5f, .5f, .5f, 0);
 }
 
-Sphere::Sphere(glm::vec3 origin, float r, Color c, float refractIdx, materialType mat) {
+Sphere::Sphere(glm::vec3 origin, float r, Color c, 
+	float refractIdx, materialType mat) {
+
 	radius = r;
 	sphereOrig = origin;
 	color = c;
@@ -43,8 +45,10 @@ glm::vec3 Sphere::getNormal(glm::vec3 point)
 	return normalize(point - this->getSpherePos());
 }
 
-void Sphere::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig, const glm::vec3& I, const int& index, const glm::vec2& uv, glm::vec3& N, glm::vec2& st)
-{
+void Sphere::getSurfaceProperties(const glm::vec3& P, 
+	const glm::vec3 orig, const glm::vec3& I, const int& index, 
+	const glm::vec2& uv, glm::vec3& N, glm::vec2& st) {
+
 	N = normalize(P - getSpherePos());
 }
 
@@ -73,7 +77,8 @@ bool Sphere::findIntersection(glm::vec3 orig,
 	return true;
 }
 
-bool Sphere::calcDistance(float& a, float& b, float& c, float& t0, float& t1) const {
+bool Sphere::calcDistance(float& a, float& b, float& c, 
+	float& t0, float& t1) const {
 	// 4 cases:
 	// 1. Ray grazes sphere (tangent): 2 real tVal, both same
 	// 2. Ray origin starts from inside sphere: 1 -ve, 1 +ve tVal

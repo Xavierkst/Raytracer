@@ -16,8 +16,8 @@ Box::Box(glm::vec3 min, glm::vec3 max, Color c, materialType mat) {
     }
 }
 
-bool Box::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear, int& index, glm::vec2& uv) const
-{
+bool Box::findIntersection(glm::vec3 orig, glm::vec3 dir, 
+    float& tNear, int& index, glm::vec2& uv) const {
     // find tminx and tminy and tmaxX and Y 
     float tminx = (bounds[0].x - orig.x) / dir.x;
     float tmaxx = (bounds[1].x - orig.x) / dir.x;
@@ -73,12 +73,14 @@ bool Box::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear, int& ind
     }
     return true;
 }
-
+// logic is found here: 
+/* https://blog.johnnovak.net/2016/10/22/
+   the-nim-raytracer-project-part-4-calculating-box-normals */
 // returns the normal of the plane that the ray intersects
-void Box::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig, const glm::vec3& I, const int& index, const glm::vec2& uv, glm::vec3& N, glm::vec2& st)
-{
-    // logic is found here: 
-    // https://blog.johnnovak.net/2016/10/22/the-nim-raytracer-project-part-4-calculating-box-normals/
+void Box::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig, 
+    const glm::vec3& I, const int& index, const glm::vec2& uv, 
+    glm::vec3& N, glm::vec2& st) {
+
     // Get center 
     glm::vec3 center((bounds[0].x + bounds[1].x) / 2.0f,
         (bounds[0].y + bounds[1].y) / 2.0f,
@@ -90,11 +92,14 @@ void Box::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig, const g
     float dy = fabsf(bounds[0].y - bounds[1].y) / 2.0f;
     float dz = fabsf(bounds[0].z - bounds[1].z) / 2.0f;
     float bias = 1.0001f;
+
     // get ratio between them and return that as the normal: 
     // theres always atleast 1 component in the internal vector that
     // has a value of 1
     // we multiply by bias to nudge the pts eg. ard 9.999994  up to 1.0f
-    N = glm::vec3((int)(Pt.x / dx * bias), (int)(Pt.y / dy * bias), (int)(Pt.z / dz * bias));
+    N = glm::vec3((int)(Pt.x / dx * bias), 
+        (int)(Pt.y / dy * bias), 
+        (int)(Pt.z / dz * bias));
 }
 
 Color Box::getColor()
@@ -114,8 +119,6 @@ glm::vec3 Box::getNormal(glm::vec3 point)
 {
     return normal;
 }
-
-
 
 materialType Box::getMaterialType()
 {

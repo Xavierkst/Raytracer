@@ -15,7 +15,8 @@ private:
 public:
 
 	Sphere();
-	Sphere(glm::vec3 origin, float r, Color c, float refractIdx, materialType mat);
+	Sphere(glm::vec3 origin, float r, Color c, 
+		float refractIdx, materialType mat);
 
 
 	glm::vec3 getSpherePos();
@@ -34,7 +35,8 @@ public:
 	bool findIntersection(glm::vec3 orig, glm::vec3 dir,
 		float& tNear, int& index, glm::vec2& uv) const;
 
-	bool calcDistance(float& a, float& b, float& c, float& t0, float& t1) const;
+	bool calcDistance(float& a, float& b, float& c, 
+		float& t0, float& t1) const;
 
 
 	materialType getMaterialType();

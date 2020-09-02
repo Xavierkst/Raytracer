@@ -2,11 +2,13 @@
 #define _BOX_H_
 
 #include "Object.h"
+#include <algorithm>
 
 class Box : public Object {
 private: 
 	Color color;
 	glm::vec3 normal;
+
 public:
 	// Min and max bound planes
 	glm::vec3 bounds[2];
