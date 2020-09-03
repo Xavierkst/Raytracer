@@ -1,11 +1,13 @@
 #include "time.h"
-#include "Render.h"
+
 #define _CRTDBG_MAP_ALLOC //to get more details
 #include <stdlib.h>  
 #include <crtdbg.h>   //for malloc and free
+#include "Render.h"
+#include "Scene.h"
 
-using namespace scene;
-
+//void writeImage(std::string fileName, float exposure,
+//	float gamma, Color* pixelData, int width, int height);
 
 int main(int argc, char* argv[]) {
 	// checking for memory leaks
@@ -28,9 +30,22 @@ int main(int argc, char* argv[]) {
 		colorBuffer[i] = options.backgroundColor;
 	}
 	// Colors / object types / lights found in "Scene.h"
+		
+	// Generating Camera --------------------------------------------------------
+	glm::vec3 cameraPos(.0f, -.2f, 0.0f);
+	glm::vec3 cameraForward(.0f, .0f, -1.0f);
+	glm::vec3 cameraReferUp(.0f, 1.0f, .0f);
+	glm::vec3 cameraRight(1.0f, .0f, .0f);
+	Camera cam(cameraPos, cameraForward, cameraReferUp);
 
-	// Populate scene objects -----------------------------------------------------
+	// generate 2 size n^2 arrays holding randomized values in range [0, 1)
+	glm::vec2* r = new glm::vec2[options.sampleNum * options.sampleNum];
+	glm::vec2* s = new glm::vec2[options.sampleNum * options.sampleNum];
+
+	// Populate scene objects & Lights ------------------------------------------
+	// Objects
 	std::vector< Object*> sceneObjects;
+	std::vector< LightSources*> lights;
 	sceneObjects.push_back(&scene_sphere);
 	sceneObjects.push_back(&scene_sphere2);
 	sceneObjects.push_back(&scene_sphere3);
@@ -49,36 +64,26 @@ int main(int argc, char* argv[]) {
 	sceneObjects.push_back(&rec);
 	sceneObjects.push_back(&box);
 	//sceneObjects.push_back(&box2);
-	
-	// Populate Lights  ---------------------------------------------------------
-	std::vector< LightSources*> lights;
+
+	// Lights
 	//lights.push_back(&theLight);
 	lights.push_back(&areaLight);
 
-	// Generating Camera --------------------------------------------------------
-	glm::vec3 cameraPos(.0f, -.2f, 0.0f);
-	glm::vec3 cameraForward(.0f, .0f, -1.0f);
-	glm::vec3 cameraReferUp(.0f, 1.0f, .0f);
-	glm::vec3 cameraRight(1.0f, .0f, .0f);
-	Camera cam(cameraPos, cameraForward, cameraReferUp);
-
-	// generate 2 size n^2 arrays holding randomized values in range [0, 1)
-	glm::vec2* r = new glm::vec2[options.sampleNum * options.sampleNum];
-	glm::vec2* s = new glm::vec2[options.sampleNum * options.sampleNum];
-
-	Render renderer;
 	// Begin rendering ---------------------------------------------------------
-	renderer.render(lights, sceneObjects, colorBuffer, cam, options, r, s);
-
+	Render renderer;
+	renderer.startRender(lights, 
+		sceneObjects, colorBuffer, cam, options, r, s);
+	
 	std::string fileName = "testFile.jpg";
-	renderer.writeImage(fileName, 1.0, 2.2, colorBuffer, 
-		options.width, options.height);
+	renderer.writeImage(fileName, 
+		1.0f, 2.2f, colorBuffer, options.width, options.height);
+
 	// Stop recording time ------------------------------------------------------
 	t2 = clock();
 	std::cout << "Render time: " << 
 		(float)(t2 - t1) / 1000.0f << " seconds" << std::endl;
 
-	// Free memory ----------------------------------------------------------
+	// Free memory --------------------------------------------------------------
 	delete[] colorBuffer;
 	delete[] r; 
 	delete[] s;
