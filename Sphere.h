@@ -7,6 +7,8 @@
 #include "Color.h"
 #include "Object.h"
 
+using namespace std;
+
 class Sphere : public Object {
 private:
 	float radius;

@@ -152,6 +152,7 @@
     <ClCompile Include="Rect.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="Render.h" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>

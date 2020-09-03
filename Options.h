@@ -2,6 +2,7 @@
 #define _OPTIONS_H_
 
 #include <glm/glm.hpp>
+#include "Color.h"
 
 #define MAX_RECURSION_DEPTH 7
 #define STARTING_DEPTH 0
@@ -24,7 +25,7 @@ public:
 	// default constructor
 	Options() {
 		softShadows = true;
-		sampleNum = 2;
+		sampleNum = 1;
 		width = 1080;
 		height = 720;
 		aspectRatio = (float)width / (float)height;

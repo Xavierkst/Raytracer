@@ -101,7 +101,10 @@ bool Sphere::calcDistance(float& a, float& b, float& c,
 	// we return true to mean that we have 2 solutions, but not sure
 	// if any real solutions
 	if (t0 > t1) {
-		std::swap(t0, t1);
+		// swap t0, t1
+		float temp = t0; 
+		t1 = t0;
+		t0 = temp;
 	}
 	return true;
 }
