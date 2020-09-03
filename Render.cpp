@@ -1,6 +1,6 @@
 #include "Render.h"
 
-void Render::render(std::vector<LightSources*>& lights, 
+void Render::startRender(std::vector<LightSources*>& lights,
 	std::vector<Object*>& sceneObjects, 
 	Color* colorBuffer, Camera cam,
 	Options options, glm::vec2* r, glm::vec2* s) {
@@ -8,7 +8,7 @@ void Render::render(std::vector<LightSources*>& lights,
 	for (int y = 0; y < options.height; y++) {
 		for (int x = 0; x < options.width; x++) {
 			Color pixelColor;
-			// Jittering the camera and shadow rays
+			// Generate jittered components for camera and shadow rays
 			for (int idx = 0; 
 				idx < options.sampleNum * options.sampleNum; ++idx) {
 				// generates a value in range [0, 1)
@@ -418,20 +418,20 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 		sumDiffuse * hitObj->getColor() *
 		hitObj->kd + sumSpecular * hitObj->ks;
 }
-
-void Render::writeImage(std::string fileName, float exposure, 
+void Render::writeImage(std::string fileName, float exposure,
 	float gamma, Color* pixelData, int width, int height) {
+
 	std::vector<unsigned char> imageData(width * height * 4);
 
 	for (int x = 0; x < width; x++) {
 		for (int y = 0; y < height; y++) {
 			Color pixelColor = pixelData[x + y * width];
 			int index = 4 * (x + y * width);
-			imageData[index + 0] = 
+			imageData[index + 0] =
 				(unsigned char)(pixelColor.getColorR() * 255.0f);
-			imageData[index + 1] = 
+			imageData[index + 1] =
 				(unsigned char)(pixelColor.getColorG() * 255.0f);
-			imageData[index + 2] = 
+			imageData[index + 2] =
 				(unsigned char)(pixelColor.getColorB() * 255.0f);
 			imageData[index + 3] = 255.0f; // alpha channel
 		}

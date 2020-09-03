@@ -4,26 +4,27 @@
 #include <string>
 #include <vector>
 #include "utils.h"
-#include "Scene.h"
+#include "Camera.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include "Camera.h"
-#include "Ray.h"
 #include "Options.h"
 #include "windows.h"
+#include "Object.h"
+#include "LightSources.h"
+#include "Scene.h"
 
 class Render {
 
 private:
 
-
 public:
+
 	// The actual rendering function that generates camera and
 	// camera rays to cast into each pixel
-	void render(std::vector<LightSources*>& lights, 
-		std::vector<Object*>& sceneObjects, 
-		Color* colorBuffer, Camera cam, 
-		Options options, glm::vec2* r, 
+	void startRender(std::vector<LightSources*>& lights,
+		std::vector<Object*>& sceneObjects,
+		Color* colorBuffer, Camera cam,
+		Options options, glm::vec2* r,
 		glm::vec2* s);
 
 	// sets the color data at the i,j-th pixel to be of color value
@@ -94,5 +95,6 @@ public:
 	// then passed into resultToPNG function to be encoded
 	void writeImage(std::string fileName, float exposure,
 		float gamma, Color* pixelData, int width, int height);
+
 };
 #endif
