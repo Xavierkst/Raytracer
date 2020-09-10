@@ -44,6 +44,8 @@ bool Rect::findIntersection(glm::vec3 orig,  glm::vec3 dir, float& tNear, int& i
     // compare their lengths
     glm::vec3 p0p = (orig + dir * tNear) - corner; // obtaining PP0
 
+
+    // This is where it gets different from the plane intersect routine
     float length_1 = dot(p0p, edge_1) / dot(edge_1, edge_1);
     float length_2 = dot(p0p, edge_2) / dot(edge_2, edge_2);
     //float edge_1_len = length(edge_1);

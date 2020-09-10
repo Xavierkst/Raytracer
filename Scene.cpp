@@ -67,6 +67,9 @@ Plane plane5(glm::vec3(0.0f, 0.0f, 1.0f),
 Plane plane6(glm::vec3(0.0f, 0.0f, -1.0f),
 	glm::vec3(.0f, 0.0f, .5f), grey, DIFFUSE);
 
+// rectangle plane: 
+//Rect smallPlane(); 
+
 glm::vec3 boxMid(1.2f, -.75f, -1.4f);
 glm::vec3 boxMid2(-.4f, -.75f, -1.5f);
 

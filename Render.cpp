@@ -263,7 +263,7 @@ float Render::clamp(const float& lo, const float& hi, const float& v) {
 }
 
 void Render::fresnel(const glm::vec3& I, glm::vec3& N, float& ior, float& kr) {
-	// get the refraction index and eta 
+	// get the refraction indices and eta 
 	float n1 = 1.0f; float n2 = ior;
 	float cosi = clamp(-1, 1, dot(I, N));
 
@@ -337,8 +337,6 @@ void Render::reflect(glm::vec3 ray_dir, glm::vec3 N,
 		hitPoint + N * opts.bias;
 }
 
-
-
 Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N, 
 	const glm::vec3 hitPoint, Object* hitObj, 
 	const std::vector<LightSources*>& sources, 
@@ -349,7 +347,7 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 	// kd (diffuse color) * I (light intensity) * dot(N, l) +
 	// Ks * I * pow(dot(h, N), phongExponent);
 	Color sumDiffuse = Color(); // initialized to black
-	Color sumSpecular = Color();
+	Color sumSpecular = Color(); // initialized to black
 	glm::vec3 shadowOrigPoint = (dot(dir, N) < 0) ?
 		hitPoint + N * opts.bias :
 		hitPoint - N * opts.bias;
@@ -361,7 +359,7 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 		float light_distance_sq;
 		if (sources[i]->getLightType() == AREA_LIGHT) {
 			// we want to sample at a randomized position on the 
-			// area light =   corner vector (starting pt) +
+			// area light = corner vector (starting pt) +
 			// some dist in a + 
 			// some dist in b
 			light_pos = sources[i]->getLightPos() +
@@ -380,7 +378,7 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 			light_dir = normalize(light_dir);
 		}
 		// trace rays back to lightsource and do intersection tests:
-		// If an object intersected by shadow ray, and the object's is closer
+		// If an object intersected by shadow ray, and the object is closer
 		// to the shadowOrigin than the light, the region will be in shadow
 		glm::vec2 uv;
 		int objIndex;
@@ -403,7 +401,7 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 			sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
 				max(0.0f, dot(N, light_dir)) * ((double)1 - inShadow);
 		}
-		if (hitObj->getMaterialType() != DIFFUSE) {
+		if (hitObj->getMaterialType() != DIFFUSE) { // non diffuse materials have specular
 			// calculate specular contribution
 			glm::vec3 scalar = 2.0f * N * dot(light_dir, N);
 			glm::vec3 reflectionDir = normalize(scalar - light_dir);
