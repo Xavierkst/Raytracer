@@ -5,6 +5,12 @@ void Render::startRender(std::vector<LightSources*>& lights,
 	Color* colorBuffer, Camera cam,
 	Options options, glm::vec2* r, glm::vec2* s) {
 
+	// I would construct the AccelStruct grid 
+	// (grid sizing/grid division/populate it etc.) 
+	// before casting rays into the scene
+
+	// now that my grid is ready, we start casting
+	// rays into the scene and traversing the grid
 	for (int y = 0; y < options.height; y++) {
 		for (int x = 0; x < options.width; x++) {
 			Color pixelColor;
@@ -96,11 +102,17 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 	}
 
 	int objIndex; // stores idx of closest obj in scene list
-	glm::vec2 uv; // check this 
+	glm::vec2 uv; 
 	Object* hitObj = nullptr;
 	float tNear = FLT_MAX;
 
-	// find the closest object intersected 
+	// trace() finds the closest object intersected 
+	// we can use a gridTraversal algorithm here to replace trace()
+	// function. Instead of using the trace() method to find closest 
+	// object intersected in the scene, we will now use our "while(1)"
+	// loop in Grid::intersect() to traverse thru the grid cells, returning
+	// "true" once first (closest) obj intersected. If not, no object 
+	// intersected, return false. 
 	if (trace(orig, dir, objects, tNear, objIndex, uv, &hitObj)) {
 
 		glm::vec3 hitPoint = orig + dir * tNear;
@@ -108,7 +120,7 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 		glm::vec2 st; // for triangle meshes
 		glm::vec3 reflection_dir;
 		glm::vec3 reflection_ray_origin;
-
+		
 		// set floor tiles to be checkered
 		if (hitObj->getColor().getColorSpecial() == 2.0f) {
 			int squareTile = floor(hitPoint.x) + floor(hitPoint.z);
@@ -411,10 +423,10 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 		}
 	}
 
-	// ambient color + diffuse + specular 
-	return hitObj->getColor() * opts.ambientLight +
-		sumDiffuse * hitObj->getColor() *
-		hitObj->kd + sumSpecular * hitObj->ks;
+	// sum up the 3 color components 
+	return hitObj->getColor() * opts.ambientLight + // ambient
+		sumDiffuse * hitObj->getColor() * hitObj->kd + // diffuse
+		sumSpecular * hitObj->ks; // specular 
 }
 void Render::writeImage(std::string fileName, float exposure,
 	float gamma, Color* pixelData, int width, int height) {

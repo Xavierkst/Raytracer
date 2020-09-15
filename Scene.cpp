@@ -65,10 +65,7 @@ Plane plane5(glm::vec3(0.0f, 0.0f, 1.0f),
 	glm::vec3(.0f, 0.0f, -5.0f), grey, DIFFUSE);
 // Wall behind camera
 Plane plane6(glm::vec3(0.0f, 0.0f, -1.0f),
-	glm::vec3(.0f, 0.0f, .5f), grey, DIFFUSE);
-
-// rectangle plane: 
-//Rect smallPlane(); 
+	glm::vec3(.0f, 0.0f, .5f), grey, DIFFUSE); 
 
 glm::vec3 boxMid(1.2f, -.75f, -1.4f);
 glm::vec3 boxMid2(-.4f, -.75f, -1.5f);

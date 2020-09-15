@@ -12,7 +12,7 @@
 #include "Light.h"
 #include <vector>
 
-	// Colors ----------------------------------------------------------
+	// Colors --------------------------------------------------------
 	extern Color whiteLight;
 	extern Color red;
 	extern Color blue;
@@ -29,7 +29,7 @@
 	extern Color pastel_blue;
 	extern Color mint;
 
-	// Objects ----------------------------------------------------------
+	// Objects -------------------------------------------------------
 	// center
 	extern  Sphere scene_sphere;
 	// right

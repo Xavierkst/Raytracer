@@ -1,9 +1,9 @@
 #include "Object.h"
 
-
 Object::Object() : ior(1.3f), material(DIFFUSE), 
 	kd(0.8f), ks(0.6f), phongExponent(15)
 {
+	//bbox(glm::vec3(.0f), glm:vec3(.0f));
 }
 
 bool Object::findIntersection(glm::vec3 orig,
