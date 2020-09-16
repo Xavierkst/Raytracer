@@ -139,9 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AccelerationStructure.cpp" />
+    <ClCompile Include="Bbox.cpp" />
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightSources.cpp" />
     <ClCompile Include="lodepng.cpp" />
@@ -151,7 +154,10 @@
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Rect.cpp" />
     <ClCompile Include="Render.cpp" />
-    <ClCompile Include="Render.h" />
+    <ClInclude Include="AccelerationStructure.h" />
+    <ClInclude Include="Bbox.h" />
+    <ClInclude Include="Grid.h" />
+    <ClInclude Include="Render.h" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Sphere.cpp" />
     <ClCompile Include="utils.cpp" />
