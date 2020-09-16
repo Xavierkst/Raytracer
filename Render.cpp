@@ -8,6 +8,9 @@ void Render::startRender(std::vector<LightSources*>& lights,
 	// I would construct the AccelStruct grid 
 	// (grid sizing/grid division/populate it etc.) 
 	// before casting rays into the scene
+	
+	// create the grid
+	Grid sceneGrid(sceneObjects, lights);
 
 	// now that my grid is ready, we start casting
 	// rays into the scene and traversing the grid

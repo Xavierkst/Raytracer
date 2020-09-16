@@ -3,7 +3,7 @@
 
 #include "Ray.h"
 #include "Color.h"
-
+#include "Bbox.h"
 enum materialType {
 	REFLECTION_AND_REFRACTION, 
 	REFLECTION, 
@@ -25,7 +25,10 @@ public:
 	float kd, ks;
 	float phongExponent;
 	materialType material;
-	//Bbox bbox;
+
+	// Include a routine in each object's constructor
+	// to fit their bounding boxes correctly
+	Bbox bbox;
 
 	virtual bool findIntersection(glm::vec3 orig, glm::vec3 dir,
 		float& tNear, int& index, glm::vec2& uv) const;

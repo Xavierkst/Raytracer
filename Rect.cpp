@@ -7,6 +7,11 @@ Rect::Rect()
     edge_2 = glm::vec3(.0f);
     color = Color(.5f, .5f, .5f, .0f);
     normal = normalize(cross(edge_1, edge_2));
+    // build routine for bounding box min, max 
+    // rects have x and z directions that stretch
+    // are finite in value
+    bbox.minBounds = this->corner + glm::vec3(edge_1.x, this->corner.y, this->corner.z);
+    bbox.maxBounds = this->corner + glm::vec3(this->corner.x, this->corner.y, edge_2.z);
 }
 
 Rect::Rect(glm::vec3 c, glm::vec3 e_a, glm::vec3 e_b, Color col, materialType mat)
@@ -17,6 +22,12 @@ Rect::Rect(glm::vec3 c, glm::vec3 e_a, glm::vec3 e_b, Color col, materialType ma
     color = col;
     normal = normalize(cross(edge_1, edge_2));
     material = mat;
+
+    // build routine for bounding box min, max 
+    // rects have x and z directions that stretch
+    // are finite in value
+    bbox.minBounds = this->corner + glm::vec3(edge_1.x, this->corner.y, this->corner.z);
+    bbox.maxBounds = this->corner + glm::vec3(this->corner.x, this->corner.y, edge_2.z);
 }
 
 bool Rect::findIntersection(glm::vec3 orig,  glm::vec3 dir, float& tNear, int& index, glm::vec2& uv) const
