@@ -71,15 +71,17 @@ glm::vec3 boxMid(1.2f, -.75f, -1.4f);
 glm::vec3 boxMid2(-.4f, -.75f, -1.5f);
 
 // Boxes ----------------------------------------------------------
-Box box(
-	glm::vec3(boxMid.x - 0.25f, boxMid.y + .25f, boxMid.z + .25f),
-	glm::vec3(boxMid.x + 0.25f, boxMid.y - 0.25f, boxMid.z - 0.25f),
-	pastel_pink, REFLECTION_AND_REFRACTION);
+//Box box(
+//	glm::vec3(boxMid.x - 0.25f, boxMid.y + .25f, boxMid.z + .25f),
+//	glm::vec3(boxMid.x + 0.25f, boxMid.y - 0.25f, boxMid.z - 0.25f),
+//	pastel_pink, REFLECTION_AND_REFRACTION);
+Box box(boxMid, 0.5f, pastel_pink, 1.09f, REFLECTION_AND_REFRACTION);
 
-Box box2(
-	glm::vec3(boxMid2.x + 0.25f, boxMid2.y - 0.25f, boxMid2.z - 0.25f),
-	glm::vec3(boxMid2.x - 0.25f, boxMid2.y + .25f, boxMid2.z + .25f),
-	mint, DIFFUSE);
+//Box box2(
+//	glm::vec3(boxMid2.x + 0.25f, boxMid2.y - 0.25f, boxMid2.z - 0.25f),
+//	glm::vec3(boxMid2.x - 0.25f, boxMid2.y + .25f, boxMid2.z + .25f),
+//	mint, DIFFUSE
+Box box2(boxMid2, 0.5f, mint, 1.05f, DIFFUSE);
 
 // Lights ----------------------------------------------------------
 Light theLight(

@@ -12,6 +12,7 @@
 #include "Object.h"
 #include "LightSources.h"
 #include "Scene.h"
+#include "Grid.h"
 
 class Render {
 
