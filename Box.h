@@ -2,19 +2,21 @@
 #define _BOX_H_
 
 #include "Object.h"
-#include <algorithm>
 
 class Box : public Object {
 private: 
 	Color color;
 	glm::vec3 normal;
-
+	glm::vec3 centroid;
 public:
 	// Min and max bound planes
 	glm::vec3 bounds[2];
 
 	Box();
-	Box(glm::vec3 min, glm::vec3 max, Color c, materialType mat);
+	//Box(glm::vec3 min, glm::vec3 max, Color c, float refractIdx, materialType mat);
+	// we assume the box to have all side same length for now
+	// so no rectangular cuboids here
+	Box(glm::vec3 centroid, float sideLength, Color c, float refractIdx, materialType mat);
 
 	bool findIntersection(glm::vec3 orig,
 		glm::vec3 dir, float& tNear,
