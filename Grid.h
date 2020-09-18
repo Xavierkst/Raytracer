@@ -8,6 +8,8 @@
 #include <iostream>
 #include "Plane.h"
 
+#define NUM_AXES 3 // the total number of axes
+
 class Grid : public AccelerationStructure {
 	struct Cell {
 		Cell() {}
@@ -77,7 +79,10 @@ public:
 	// if the grid is intersected, traverse ray thru the cells 
 	// using 3D-DDA algorithm. Returns pointer to the object 
 	// intersected 
-	//Object* intersect();
+	bool intersect(glm::vec3 orig, glm::vec3 dir, 
+		std::vector<Object*>& objects, float& tNear, 
+		int& objIndex, glm::vec2& uv, 
+		Object* hitObj);
 };
 
 

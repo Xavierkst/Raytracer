@@ -26,7 +26,8 @@ Grid::Grid(std::vector<Object*> objs, std::vector<LightSources*> lights) :
 	// 1. Determining grid size
 	// 2. Determine the sub-division
 	// dimensions by finding cellDimensions, resolution, size, 
-	glm::vec3 diff(gridBbox.maxBounds.x - gridBbox.minBounds.x, gridBbox.minBounds.y - gridBbox.maxBounds.y, gridBbox.minBounds.z - gridBbox.maxBounds.z);
+	//glm::vec3 diff(gridBbox.maxBounds.x - gridBbox.minBounds.x, gridBbox.minBounds.y - gridBbox.maxBounds.y, gridBbox.minBounds.z - gridBbox.maxBounds.z);
+	glm::vec3 diff = gridBbox.maxBounds - gridBbox.minBounds;
 	glm::vec3 size;
 	int resolution[3];
 	int lambda = 5;
@@ -52,11 +53,11 @@ Grid::Grid(std::vector<Object*> objs, std::vector<LightSources*> lights) :
 	// the ones with no objects in theirs cells remain nullptr
 	
 	// find the cell coords for xmin and xmax (y & z also)
-	// iterate thru all the objects and insert each one into the grid
-	// based on their max and min bounding boxes
+	// loop thru all the objects and insert each one into the grid
+	// based on their max and min bounding points
 	int totalItems = 0;
 	for (int k = 0; k < objects.size(); ++k) {
-		totalItems++;
+		//totalItems++;
 		// find the x/y/z indices 
 		// subtract minimum of object Bbox with min of grid's Bbox
 		// and divide by cellSize x/y/z to get the "normalized" value,
@@ -67,11 +68,11 @@ Grid::Grid(std::vector<Object*> objs, std::vector<LightSources*> lights) :
 		
 		// since z is always negative and we want a +ve 
 		// index, we negate for z. 
-		//Obtain cell coordinates for each object
-		int zmin = clamp(floor(-minDiff.z / cellSize.z), 0, resolution[2] - 1);
-		int zmax = clamp(floor(-maxDiff.z / cellSize.z), 0, resolution[2] - 1);
-		int ymin = clamp(floor(-minDiff.y / cellSize.y), 0, resolution[1] - 1);
-		int ymax = clamp(floor(-maxDiff.y / cellSize.y), 0, resolution[1] - 1);
+		// Obtain cell coordinates for each object
+		int zmin = clamp(floor(minDiff.z / cellSize.z), 0, resolution[2] - 1);
+		int zmax = clamp(floor(maxDiff.z / cellSize.z), 0, resolution[2] - 1);
+		int ymin = clamp(floor(minDiff.y / cellSize.y), 0, resolution[1] - 1);
+		int ymax = clamp(floor(maxDiff.y / cellSize.y), 0, resolution[1] - 1);
 		int xmin = clamp(floor(minDiff.x / cellSize.x), 0, resolution[0] - 1);
 		int xmax = clamp(floor(maxDiff.x / cellSize.x), 0, resolution[0] - 1);
 		// loop thru cells to insert object inside them
@@ -86,35 +87,40 @@ Grid::Grid(std::vector<Object*> objs, std::vector<LightSources*> lights) :
 					// insert object into Cell object array
 					// cells[curIdx]
 					cells[curIdx]->insertObject(objects[k]);
+					std::cout << curIdx << std::endl;
+
 				}
 			}
 		}
 
 	}
-	//std::vector<Object*> objPtrs;
-	//std::cout << numCells << std::endl;
+	std::vector<Object*> objPtrs;
+	std::cout << numCells << std::endl;
 	//int totalItems = 0;
-	//for (int m = 0; m < numCells; ++m) {
-	//	if (cells[m] != nullptr) {
-	//		for (int a = 0; a < cells[m]->cellObjects.size(); ++a) {
-	//			//std::cout << cells[m]->cellObjects[a] << std::endl;
-	//			bool equal = false;
-	//			if (objPtrs.size() == 0) {
-	//				objPtrs.push_back(cells[m]->cellObjects[a]);
-	//				totalItems++;
-	//			}
-	//			else {
-	//				for (int h = 0; h < objPtrs.size(); ++h) {
-	//					if (objPtrs[h] == cells[m]->cellObjects[a]) equal = true;
-	//				}
-	//				if (!equal) {
-	//					objPtrs.push_back(cells[m]->cellObjects[a]);
-	//					totalItems++;
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
+	for (int m = 0; m < numCells; ++m) {
+		if (cells[m] != nullptr) {
+			for (int a = 0; a < cells[m]->cellObjects.size(); ++a) {
+				//std::cout << cells[m]->cellObjects[a] << std::endl;
+				std::cout << cells[m]->cellObjects.size() << std::endl;
+				totalItems += cells[m]->cellObjects.size();
+				//bool equal = false;
+				//if (objPtrs.size() == 0) {
+				//	objPtrs.push_back(cells[m]->cellObjects[a]);
+				//	totalItems++;
+				//}
+				//else {
+				//	for (int h = 0; h < objPtrs.size(); ++h) {
+				//		if (objPtrs[h] == cells[m]->cellObjects[a]) equal = true;
+				//	}
+				//	if (!equal) {
+				//		objPtrs.push_back(cells[m]->cellObjects[a]);
+
+				//		//totalItems++;
+				//	}
+				//}
+			}
+		}
+	}
 	std::cout << "total object count is " << totalItems << std::endl;
 }
 
@@ -131,3 +137,34 @@ Grid::~Grid() {
 int Grid::clamp(const int& lo, const int& hi, const int& v) {
 	return std::max(lo, std::min(hi, v));
 }
+
+bool Grid::intersect(glm::vec3 orig, glm::vec3 dir, std::vector<Object*>& objects, float& tNear, int& objIndex, glm::vec2& uv, Object* hitObj)
+{
+	// prep the deltaT, nextCrossingT, initial x/y/z, 
+	// find the starting cell coordinates using rayOrigGrid 
+	// rayOriginGrid = rayOrig - gridMin; 
+	// You might need to change your min max point bounds, or alter your code 
+	
+	// rayOriginGrid 
+	//glm::vec3 rayOriginGrid = 
+	// set up the neccessary index for bounds, exit, and cell, 
+	// and set up parametric distance variables
+	glm::vec3 step, exit, rayOriginGrid;
+	glm::vec3 nextCrossingT, deltaT;
+	
+	// Check if ray intersects Grid's Bounding Box
+	
+
+	// loop thru all 3 axes to initialize each respective component
+	//for (int i = 0; i < NUM_AXES; ++i) {
+	//	rayOriginGrid[i] = 
+
+	//
+	//}
+
+
+	return false;
+}
+
+
+

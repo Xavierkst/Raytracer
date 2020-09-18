@@ -10,7 +10,7 @@ void Render::startRender(std::vector<LightSources*>& lights,
 	// before casting rays into the scene
 	
 	// create the grid
-	Grid sceneGrid(sceneObjects, lights);
+	//Grid sceneGrid(sceneObjects, lights);
 
 	// now that my grid is ready, we start casting
 	// rays into the scene and traversing the grid
@@ -98,8 +98,9 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 	glm::vec2 jitter)
 {
 	Color hitColor = Color();
-	// check whether depth is greater than maxDepth, assign 
-	// black background if so
+	// Stopping Condition: 
+	// check if depth is greater than maxDepth, if yes, 
+	// return no color contribution in this call level
 	if (depth > MAX_RECURSION_DEPTH) {
 		return hitColor = Color(.0f, .0f, .0f, .0f);
 	}
@@ -117,7 +118,7 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 	// "true" once first (closest) obj intersected. If not, no object 
 	// intersected, return false. 
 	if (trace(orig, dir, objects, tNear, objIndex, uv, &hitObj)) {
-
+		// intersection pt & ptr to object has been found
 		glm::vec3 hitPoint = orig + dir * tNear;
 		glm::vec3 N; // normal
 		glm::vec2 st; // for triangle meshes

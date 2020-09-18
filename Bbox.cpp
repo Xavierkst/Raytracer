@@ -3,7 +3,7 @@
 // since our camera/eye faces -z Axis:
 // for z values, the minimal value is small-negative, while 
 // the maximum value is large-negative
-Bbox::Bbox() : maxBounds(-FLT_MAX, FLT_MAX, FLT_MAX), minBounds(FLT_MAX, -FLT_MAX, -FLT_MAX) {
+Bbox::Bbox() : maxBounds(-FLT_MAX, -FLT_MAX, FLT_MAX), minBounds(FLT_MAX, FLT_MAX, -FLT_MAX) {
 	// puts min and max as infinities by default
     // so their values would def be assigned upon
     // initialization
@@ -35,10 +35,10 @@ Bbox& Bbox::extendBy(glm::vec3& Pt) {
 	//if (Pt.z != -FLT_MAX && max.z > Pt.z) max.z = Pt.z;
 
     if (minBounds.x > Pt.x) minBounds.x = Pt.x;
-    if (minBounds.y < Pt.y) minBounds.y = Pt.y;
+    if (minBounds.y > Pt.y) minBounds.y = Pt.y;
     if (minBounds.z < Pt.z) minBounds.z = Pt.z;
     if (maxBounds.x < Pt.x) maxBounds.x = Pt.x;
-    if (maxBounds.y > Pt.y) maxBounds.y = Pt.y;
+    if (maxBounds.y < Pt.y) maxBounds.y = Pt.y;
     if (maxBounds.z > Pt.z) maxBounds.z = Pt.z;
 
 	// returns a reference to the same Bbox
@@ -57,7 +57,7 @@ bool Bbox::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear) {
     float tminx, tmaxx;
     if (inverseDir.x >= .0f) {
         tminx = (minBounds.x - orig.x) * inverseDir.x;
-        tmaxx = (maxBounds.x - orig.x) * inverseDir.x;
+        tmaxx = (maxBounds.x - orig.x)* inverseDir.x;
     }
     else {
         tminx = (maxBounds.x - orig.x) * inverseDir.x;
@@ -67,16 +67,16 @@ bool Bbox::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear) {
 
     float tminy, tmaxy;
     if (inverseDir.y >= .0f) {
-        tminy = (maxBounds.y - orig.y) * inverseDir.y;
-        tmaxy = (minBounds.y - orig.y) * inverseDir.y;
-    }
-    else {
         tminy = (minBounds.y - orig.y) * inverseDir.y;
         tmaxy = (maxBounds.y - orig.y) * inverseDir.y;
     }
+    else {
+        tminy = (maxBounds.y - orig.y) * inverseDir.y;
+        tmaxy = (minBounds.y - orig.y) * inverseDir.y;
+    }
 
     // check if the ray totally miss x-y planes
-    if ((tminx > tmaxy) || (tminy > tmaxx))
+    if ((tminx > tmaxy) || (tminy > tmaxx)) 
         return false;
 
     // we take the largest of the minimum
@@ -110,9 +110,8 @@ bool Bbox::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear) {
         tNear = tmin;
     }
     else {
-        // if you're casting the shadowRay from behind the box, 
-        // and you do intersection test with the same box, the returned 
-        // t value will be negative, which means no hit
+        // if you're casting a ray from behind the box, 
+        // the returned t value will be negative, which means no hit
         return false;
     }
 
