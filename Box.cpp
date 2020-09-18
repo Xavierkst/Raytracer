@@ -6,8 +6,10 @@ Box::Box() {
     centroid = glm::vec3(.0f);
 
     float halfLength = 0.25f;
-    bounds[0] = centroid + glm::vec3(-halfLength, halfLength, halfLength);
-    bounds[1] = centroid + glm::vec3(halfLength, -halfLength, -halfLength);
+    // min
+    bounds[0] = centroid + glm::vec3(-halfLength, -halfLength, halfLength);
+    // max
+    bounds[1] = centroid + glm::vec3(halfLength, halfLength, -halfLength);
     // build routine for bounding box min, max 
     bbox.minBounds = bounds[0];
     bbox.maxBounds = bounds[1];
@@ -43,8 +45,10 @@ Box::Box(glm::vec3 centroid, float length, Color c, float refractIdx, materialTy
     // (center of box) for reference value, so halve it
     float halfLength = length * 0.5f;
     // set the min and max bounds 
-    bounds[0] = centroid + glm::vec3(-halfLength, halfLength, halfLength);
-    bounds[1] = centroid + glm::vec3(halfLength, -halfLength, -halfLength);
+    // min
+    bounds[0] = centroid + glm::vec3(-halfLength, -halfLength, halfLength);
+    // max
+    bounds[1] = centroid + glm::vec3(halfLength, halfLength, -halfLength);
 
     // build routine for bounding box min, max 
     bbox.minBounds = bounds[0];
@@ -72,12 +76,12 @@ bool Box::findIntersection(glm::vec3 orig, glm::vec3 dir,
 
     float tminy, tmaxy;
     if (inverseDir.y >= .0f) {
-        tminy = (bounds[1].y - orig.y) * inverseDir.y;
-        tmaxy = (bounds[0].y - orig.y) * inverseDir.y;
-    }
-    else {
         tminy = (bounds[0].y - orig.y) * inverseDir.y;
         tmaxy = (bounds[1].y - orig.y) * inverseDir.y;
+    }
+    else {
+        tminy = (bounds[1].y - orig.y) * inverseDir.y;
+        tmaxy = (bounds[0].y - orig.y) * inverseDir.y;
     }
     //float tminx = (bounds[0].x - orig.x) / dir.x;
     //float tmaxx = (bounds[1].x - orig.x) / dir.x;
