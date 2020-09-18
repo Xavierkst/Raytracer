@@ -259,7 +259,6 @@ bool Render::trace(glm::vec3 orig, glm::vec3 dir,
 	// iterate thru object vector and call intersect on each
 	// object, replace saved values with those of the closest obj 
 	for (int k = 0; k < objects.size(); k++) {
-
 		// findIntersectionwill save tCurrNearest, and pointer to nearest
 		// object
 		if (objects[k]->findIntersection(orig, dir, tCurrNearest, indexK, uvK)

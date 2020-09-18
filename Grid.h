@@ -38,7 +38,20 @@ class Grid : public AccelerationStructure {
 
 		// iterates thru triangles vector and finds the closest ray-triangle inter.
 		// in the cell, stores that triangle/oject
-		bool intersect(glm::vec3 orig, glm::vec3 dir, float& tNear, Object* hitObj);
+		bool intersect(glm::vec3 orig, glm::vec3 dir, float& tNear, Object* hitObj) {
+			glm::vec2 uv;
+			int objectIdx = 0;
+			float tCurrNearest;
+			for (int i = 0; i < cellObjects.size(); ++i) {
+				// findIntersectionwill save tCurrNearest, and pointer to nearest
+				// object -- (we don't use objectIdx and uv at the moment..)
+				if (cellObjects[i]->findIntersection(orig, dir, tNear, objectIdx, uv) 
+					&& tCurrNearest < tNear) {
+					tNear = tCurrNearest;
+					hitObj = cellObjects[i];
+				}
+			}
+		}
 
 		std::vector<TriangleDes> triangles;
 		std::vector<Object*> cellObjects;
@@ -68,6 +81,8 @@ public:
 	// resolution: X by Y by Z 
 	int numCells;
 	Cell** cells;
+	// x/y/z dimensions of each cell
+	glm::vec3 cellDimensions;
 
 	Bbox gridBbox;
 	
