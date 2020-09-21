@@ -1,6 +1,6 @@
 #include "Grid.h"
 
-Grid::Grid(std::vector<Object*> objs, std::vector<LightSources*> lights) :
+Grid::Grid(std::vector<Object*>& objs, std::vector<LightSources*>& lights) :
 	AccelerationStructure(objs) {
 	// determine the bounds of the grid by iterating
 	// thru all scene objects and expanding its bounds accordingly
@@ -13,10 +13,10 @@ Grid::Grid(std::vector<Object*> objs, std::vector<LightSources*> lights) :
 		gridBbox.extendBy(objects[i]->bbox.maxBounds);
 		
 		// print out the values
-		std::cout << "current Object Bbox: " << std::endl;
-		std::cout << objects[i]->bbox.minBounds.x << " " << objects[i]->bbox.minBounds.y << " " << objects[i]->bbox.minBounds.z << " " << std::endl;
-		std::cout << objects[i]->bbox.maxBounds.x << " " << objects[i]->bbox.maxBounds.y << " " << objects[i]->bbox.maxBounds.z << " " << std::endl;
-		std::cout << "grid Bbox Object: " << std::endl;
+		//std::cout << "current Object Bbox: " << std::endl;
+		//std::cout << objects[i]->bbox.minBounds.x << " " << objects[i]->bbox.minBounds.y << " " << objects[i]->bbox.minBounds.z << " " << std::endl;
+		//std::cout << objects[i]->bbox.maxBounds.x << " " << objects[i]->bbox.maxBounds.y << " " << objects[i]->bbox.maxBounds.z << " " << std::endl;
+		//std::cout << "grid Bbox Object: " << std::endl;
 		std::cout << gridBbox.minBounds.x << " " << gridBbox.minBounds.y << " " << gridBbox.minBounds.z << " " << std::endl;
 		std::cout << gridBbox.maxBounds.x << " " << gridBbox.maxBounds.y << " " << gridBbox.maxBounds.z << " " << std::endl;
 	}
@@ -26,7 +26,7 @@ Grid::Grid(std::vector<Object*> objs, std::vector<LightSources*> lights) :
 	// dimensions by finding cellDimensions, resolution, size, 
 	glm::vec3 diff = gridBbox.maxBounds - gridBbox.minBounds;
 	glm::vec3 size;
-	int resolution[3];
+	//int resolution[3];
 	int lambda = 5;
 	for (int j = 0; j < 3; ++j) {
 		size[j] = fabsf(diff[j]); 
@@ -41,7 +41,7 @@ Grid::Grid(std::vector<Object*> objs, std::vector<LightSources*> lights) :
 
 	// create a 1-D cell array with resx * resy * resz elements
 	numCells = resolution[0] * resolution[1] * resolution[2];
-	cells = new Grid::Cell* [numCells];
+	cells = new Cell*[numCells];
 	
 	// memset them all to nullptr for now
 	memset(cells, 0x0, sizeof(Grid::Cell*) * numCells);
@@ -66,12 +66,12 @@ Grid::Grid(std::vector<Object*> objs, std::vector<LightSources*> lights) :
 		// since z is always negative and we want a +ve 
 		// index, we negate for z. 
 		// Obtain cell coordinates for each object
-		int zmin = clamp(floor(minDiff.z / cellDimensions.z), 0, resolution[2] - 1);
-		int zmax = clamp(floor(maxDiff.z / cellDimensions.z), 0, resolution[2] - 1);
-		int ymin = clamp(floor(minDiff.y / cellDimensions.y), 0, resolution[1] - 1);
-		int ymax = clamp(floor(maxDiff.y / cellDimensions.y), 0, resolution[1] - 1);
-		int xmin = clamp(floor(minDiff.x / cellDimensions.x), 0, resolution[0] - 1);
-		int xmax = clamp(floor(maxDiff.x / cellDimensions.x), 0, resolution[0] - 1);
+		int zmin = clamp(0, resolution[2] - 1, floor(-minDiff.z / cellDimensions.z));
+		int zmax = clamp(0, resolution[2] - 1, floor(-maxDiff.z / cellDimensions.z));
+		int ymin = clamp(0, resolution[1] - 1, floor(minDiff.y / cellDimensions.y));
+		int ymax = clamp(0, resolution[1] - 1, floor(maxDiff.y / cellDimensions.y));
+		int xmin = clamp(0, resolution[0] - 1, floor(minDiff.x / cellDimensions.x));
+		int xmax = clamp(0, resolution[0] - 1, floor(maxDiff.x / cellDimensions.x));
 		// loop thru cells to insert object inside them
 		for (int z = zmin; z <= zmax; ++z) {
 			for (int y = ymin; y <= ymax; ++y) {
@@ -79,45 +79,29 @@ Grid::Grid(std::vector<Object*> objs, std::vector<LightSources*> lights) :
 					// get the current grid idx -- its 1-dimensional
 					// each z index has traversed x*y elems, same idea for y etc...
 					int curIdx = z * resolution[0] * resolution[1] + y * resolution[0] + x;
-					// cells with objects are not null
-					cells[curIdx] = new Cell;
+					if (cells[curIdx] == nullptr) { // cells with objects are not null
+						cells[curIdx] = new Cell;
+					}
 					// insert object into Cell object array
 					// cells[curIdx]
 					cells[curIdx]->insertObject(objects[k]);
 					std::cout << curIdx << std::endl;
-
 				}
 			}
 		}
 
 	}
-	std::vector<Object*> objPtrs;
-	std::cout << numCells << std::endl;
-	//int totalItems = 0;
-	for (int m = 0; m < numCells; ++m) {
-		if (cells[m] != nullptr) {
-			for (int a = 0; a < cells[m]->cellObjects.size(); ++a) {
-				//std::cout << cells[m]->cellObjects[a] << std::endl;
-				std::cout << cells[m]->cellObjects.size() << std::endl;
-				totalItems += cells[m]->cellObjects.size();
-				//bool equal = false;
-				//if (objPtrs.size() == 0) {
-				//	objPtrs.push_back(cells[m]->cellObjects[a]);
-				//	totalItems++;
-				//}
-				//else {
-				//	for (int h = 0; h < objPtrs.size(); ++h) {
-				//		if (objPtrs[h] == cells[m]->cellObjects[a]) equal = true;
-				//	}
-				//	if (!equal) {
-				//		objPtrs.push_back(cells[m]->cellObjects[a]);
-
-				//		//totalItems++;
-				//	}
-				//}
-			}
-		}
-	}
+	//std::vector<Object*> objPtrs;
+	//std::cout << numCells << std::endl;
+	////int totalItems = 0;
+	//for (int m = 0; m < numCells; ++m) {
+	//	if (cells[m] != nullptr) {
+	//		for (int a = 0; a < cells[m]->cellObjects.size(); ++a) {
+	//			std::cout << cells[m]->cellObjects.size() << std::endl;
+	//			totalItems += cells[m]->cellObjects.size();
+	//		}
+	//	}
+	//}
 	std::cout << "total object count is " << totalItems << std::endl;
 }
 
@@ -130,12 +114,11 @@ Grid::~Grid() {
 	delete cells;
 }
 
-
 int Grid::clamp(const int& lo, const int& hi, const int& v) {
 	return std::max(lo, std::min(hi, v));
 }
 
-bool Grid::intersect(glm::vec3 orig, glm::vec3 dir, std::vector<Object*>& objects, float& tNear, int& objIndex, glm::vec2& uv, Object* hitObj) {
+bool Grid::intersect(glm::vec3 orig, glm::vec3 dir, const std::vector<Object*>& objects, float& tNear, int& objIndex, glm::vec2& uv, Object* hitObj) {
 	// prep the deltaT, nextCrossingT, initial x/y/z, 
 	// find the starting cell coordinates using 	
 	// rayOriginGrid 
@@ -167,26 +150,57 @@ bool Grid::intersect(glm::vec3 orig, glm::vec3 dir, std::vector<Object*>& object
 
 		// check if i-th direction is + or -ve
 		if (dir[i] < .0f) {
-			// the parametric dist traversed due to i-th axis
-			deltaT[i] = -cellDimensions[i] / dir[i];
-			nextCrossingT[i] = tNear + ((cell[i] * cellDimensions[i] - rayOriginGrid[i]) / dir[i]);
-			// decide cell idx step direction
-			step[i] = -1;
-			// set exit bounds 
-			exit[i] = -1;
+			//if (i == 0 || i == 1) {
+				// the parametric dist traversed due to i-th axis
+				deltaT[i] = -cellDimensions[i] / dir[i];
+				
+				if (i == 0 || i == 1) {
+					nextCrossingT[i] = tNear + ((cell[i] * cellDimensions[i] - rayOriginGrid[i]) / dir[i]);
+					// decide cell idx step direction
+					step[i] = -1;
+					// set exit bounds 
+					exit[i] = -1;
+				}
+				else {
+					nextCrossingT[i] = tNear + (( (cell[i] + 1) * cellDimensions[i] - rayOriginGrid[i]) / dir[i]);
+					// decide cell idx step direction
+					step[i] = 1;
+					// set exit bounds 
+					exit[i] = resolution[i];
+				}
+			//}
+			//else {
+			//	deltaT[i] = -cellDimensions[i] / dir[i];
+			//	nextCrossingT[i] = tNear + (((cell[i] + 1) * cellDimensions[i] - rayOriginGrid[i]) / -dir[i]);
+			//	// decide cell idx step direction
+			//	step[i] = 1;
+			//	// set exit bounds 
+			//	exit[i] = resolution[i];
+			//}
 		}
 		else {
-			deltaT[i] = cellDimensions[i] / dir[i];
-			nextCrossingT[i] = tNear + (((cell[i] + 1) * cellDimensions[i] - rayOriginGrid[i]) / dir[i]);
-			// decide cell idx step direction
-			step[i] = 1;
-			// set exit bounds 
-			exit[i] = resolution[i];
+			//if (i == 0 || i == 1) {
+				deltaT[i] = cellDimensions[i] / dir[i];
+				nextCrossingT[i] = tNear + (((cell[i] + 1) * cellDimensions[i] - rayOriginGrid[i]) / dir[i]);
+				// decide cell idx step direction
+				step[i] = 1;
+				// set exit bounds 
+				exit[i] = resolution[i];
+			//}
+			//else {
+			//	// the parametric dist traversed due to i-th axis
+			//	deltaT[i] = cellDimensions[i] / dir[i];
+			//	nextCrossingT[i] = tNear + ((cell[i] * cellDimensions[i] - rayOriginGrid[i]) / dir[i]);
+			//	// decide cell idx step direction
+			//	step[i] = -1;
+			//	// set exit bounds 
+			//	exit[i] = -1;
+			//}
 		}
 	}
 
 	// We want to retrieve a pointer to the object
-	Object* hitObj;
+
 	// Begin traversing the cells of the Grid and do intersection
 	// test at each cell, return reference to object hit
 	while (1) {
@@ -214,18 +228,16 @@ bool Grid::intersect(glm::vec3 orig, glm::vec3 dir, std::vector<Object*>& object
 		// check if object is hit, and if the intersection 
 		// dist is within cell confines -- we break out of loop
 		// if we did. We now have object's surf. color
-		if (hitObj != nullptr && tNear < nextCrossingT[axis]) break;
+		if (hitObj != nullptr && tNear < nextCrossingT[axis]) {
+			break;
+		}
 		// else no hit, traverse to next cell
 		nextCrossingT[axis] += deltaT[axis];
 		cell[axis] += step[axis];
 		// check if traversal bounds exceeded 
 		if (cell[axis] == exit[axis]) break;
 	}
-
 	// if hitObj references an object, then 
 	// intersection found is true, else nullptr means false
 	return (hitObj != nullptr);
 }
-
-
-

@@ -41,16 +41,17 @@ class Grid : public AccelerationStructure {
 		bool intersect(glm::vec3 orig, glm::vec3 dir, float& tNear, Object* hitObj) {
 			glm::vec2 uv;
 			int objectIdx = 0;
-			float tCurrNearest;
+			float tCurrNearest = FLT_MAX;
 			for (int i = 0; i < cellObjects.size(); ++i) {
 				// findIntersectionwill save tCurrNearest, and pointer to nearest
 				// object -- (we don't use objectIdx and uv at the moment..)
-				if (cellObjects[i]->findIntersection(orig, dir, tNear, objectIdx, uv) 
+				if (cellObjects[i]->findIntersection(orig, dir, tCurrNearest, objectIdx, uv) 
 					&& tCurrNearest < tNear) {
-					tNear = tCurrNearest;
+					 tNear = tCurrNearest;
 					hitObj = cellObjects[i];
 				}
 			}
+			return (hitObj != nullptr);
 		}
 
 		std::vector<TriangleDes> triangles;
@@ -65,7 +66,7 @@ public:
 	Grid();
 
 	// define grid constructor
-	Grid(std::vector<Object*> objs, std::vector<LightSources*> lights);
+	Grid(std::vector<Object*>& objs, std::vector<LightSources*>& lights);
 
 	// frees the array of pointers to Cell objects, then finally frees
 	// pointer to the array of Cell pointers
@@ -81,25 +82,16 @@ public:
 	// resolution: X by Y by Z 
 	int numCells;
 	Cell** cells;
-	// x/y/z dimensions of each cell
-	glm::vec3 cellDimensions;
-
 	Bbox gridBbox;
 	
-	// list of scene objects 
-	std::vector<Object*> objectList;
-
 	// Initiates intersection routine of 
 	// cam ray casted into the scene into the grid 
 	// if the grid is intersected, traverse ray thru the cells 
 	// using 3D-DDA algorithm. Returns pointer to the object 
 	// intersected 
 	bool intersect(glm::vec3 orig, glm::vec3 dir, 
-		std::vector<Object*>& objects, float& tNear, 
+		const std::vector<Object*>& objects, float& tNear, 
 		int& objIndex, glm::vec2& uv, 
 		Object* hitObj);
 };
-
-
-
 #endif
