@@ -94,9 +94,10 @@ bool Sphere::calcDistance(float& a, float& b, float& c,
 	// 4. Ray intersects sphere at 2 non-tangent points: 2 +ve tVal
 	// take smaller of 2
 	float discriminant = (b*b) - (4*a*c);
+
 	// if t is complex (negative)
 	if (discriminant < 0.0f) {
-		false;
+		return false;
 	}
 	
 	float rootDiscriminant = sqrt(discriminant);
