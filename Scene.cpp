@@ -33,7 +33,7 @@ Sphere scene_sphere4(glm::vec3(-.4f, -.65f, -5.3f), 0.35f,
 	pastel_pink, FLT_MAX, DIFFUSE_AND_GLOSSY);
 // b.g. mid-right
 Sphere scene_sphere5(glm::vec3(.4f, -.65f, -5.3f), 0.35f,
-	pastel_blue, FLT_MAX, DIFFUSE_AND_GLOSSY);
+	pastel_blue, FLT_MAX, DIFFUSE_AND_GLOSSY);	
 // foreground left
 Sphere scene_sphere6(glm::vec3(-.5f, -.75f, -1.7f), 0.25f,
 	pastel_blue, FLT_MAX, DIFFUSE_AND_GLOSSY);

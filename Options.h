@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include "Color.h"
 
-#define MAX_RECURSION_DEPTH 4
+#define MAX_RECURSION_DEPTH 2
 #define STARTING_DEPTH 0
 
 class Options {
