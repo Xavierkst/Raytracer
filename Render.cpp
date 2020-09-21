@@ -1,5 +1,9 @@
 #include "Render.h"
 
+Render::Render() 
+{
+}
+
 void Render::startRender(std::vector<LightSources*>& lights,
 	std::vector<Object*>& sceneObjects, 
 	Color* colorBuffer, Camera cam,
@@ -10,7 +14,7 @@ void Render::startRender(std::vector<LightSources*>& lights,
 	// before casting rays into the scene
 	
 	// create the grid
-	//Grid sceneGrid(sceneObjects, lights);
+	//sceneGrid = new Grid(sceneObjects, lights);
 
 	// now that my grid is ready, we start casting
 	// rays into the scene and traversing the grid
@@ -46,9 +50,17 @@ void Render::startRender(std::vector<LightSources*>& lights,
 					rayOrigin = cam.getCamPos();
 					Ray camRay(rayOrigin, rayDir); // generate cam ray
 
+
+					Object* hitObj = nullptr;
+					float tNear = .0f;
+					int objIndex = .0f;
+					glm::vec2 uv(.0f);
 					// Cast ray into the scene
 					pixelColor = pixelColor + castRay(rayOrigin, rayDir,
 						lights, sceneObjects, options, STARTING_DEPTH, s[l]);
+					
+					/*pixelColor = sceneGrid->intersect(rayOrigin, rayDir,
+						sceneObjects, tNear, objIndex, uv, hitObj) ? Color(1.0f, 1.0f, 1.0f, .0f) : Color(.0f, .0f, .0f, .0f);*/
 				}
 				// average out the color sampled from 
 				// n^2 rays cast each indiv. pixel
@@ -117,7 +129,16 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 	// loop in Grid::intersect() to traverse thru the grid cells, returning
 	// "true" once first (closest) obj intersected. If not, no object 
 	// intersected, return false. 
+	//if (trace(orig, dir, objects, tNear, objIndex, uv, &hitObj)) {
+	//bool firstTime = false;
+	//if (depth == 0) {
+	//	firstTime = sceneGrid->intersect(orig, dir, objects, tNear, objIndex, uv, hitObj);
+	//}
+	//else {
+	//	firstTime = trace(orig, dir, objects, tNear, objIndex, uv, &hitObj);
+	//}
 	if (trace(orig, dir, objects, tNear, objIndex, uv, &hitObj)) {
+	//if (firstTime) {
 		// intersection pt & ptr to object has been found
 		glm::vec3 hitPoint = orig + dir * tNear;
 		glm::vec3 N; // normal
@@ -153,8 +174,7 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 			// inside or outside surface
 			glm::vec3 refract_ray_orig = dot(dir, N) < 0.0f ?
 				hitPoint - N * opts.bias : hitPoint + N * opts.bias;
-			glm::vec3 refract_ray_dir =
-				normalize(refract(dir, N, hitObj->ior));
+			glm::vec3 refract_ray_dir = normalize(refract(dir, N, hitObj->ior));
 			// compute fresnel
 			fresnel(dir, N, hitObj->ior, kr);
 			// Proportion of light transmitted 

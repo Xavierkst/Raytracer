@@ -19,6 +19,8 @@ class Render {
 private:
 
 public:
+	Render();
+	Grid* sceneGrid;
 
 	// The actual rendering function that generates camera and
 	// camera rays to cast into each pixel
