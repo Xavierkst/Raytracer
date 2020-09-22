@@ -11,12 +11,11 @@ There is no multi-threading in this and so the rendering time is very long witho
 * Ray-Sphere/(Axis aligned)Box/Rectangle/Plane intersection routines
 ### In-progress: 
 * Acceleration structure: Uniform grid 
-### L & Center: dielectric spheres, Right: A reflective (mirror) sphere 
 ### Cornell Box: Reflection and refraction
 ![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/Cornell_Box_objects.jpg)
 ![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/testFile_AA_8_rectangle.jpg)
 ### 4 Boxes (AABB) transmissive and diffuse surfaces
-![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/4Cubes.jpg)
+![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/4cubes.jpg)
 ### Show casing reflections, refractions, fresnel effect
 ![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/transparency_pic.jpg)
 ### Mirror/Reflective spheres
