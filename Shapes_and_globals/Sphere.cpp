@@ -4,6 +4,8 @@ Sphere::Sphere() {
 	radius = 1.0f;
 	sphereOrig = glm::vec3(0.0f, 1.0f, 5.0f);
 	color = Color(0.5f, .5f, .5f, 0);
+	bbox.minBounds = sphereOrig + glm::vec3(-1.0f, -1.0f, 1.0f);
+	bbox.maxBounds = sphereOrig + glm::vec3(1.0f, 1.0f, -1.0f);
 }
 
 Sphere::Sphere(glm::vec3 origin, float r, Color c, 
@@ -20,6 +22,11 @@ Sphere::Sphere(glm::vec3 origin, float r, Color c,
 		mat == DIFFUSE_AND_GLOSSY_AND_REFLECTION) {
 		ior = FLT_MAX;
 	}
+	// build routine for bounding box min, max 
+	// note: the min is in the front top left
+	// max is in the back bottom right 
+	bbox.minBounds = origin + glm::vec3(-r, -r, r);
+	bbox.maxBounds = origin + glm::vec3(r, r, -r);
 }
 
 glm::vec3 Sphere::getSpherePos() {
@@ -87,9 +94,10 @@ bool Sphere::calcDistance(float& a, float& b, float& c,
 	// 4. Ray intersects sphere at 2 non-tangent points: 2 +ve tVal
 	// take smaller of 2
 	float discriminant = (b*b) - (4*a*c);
+
 	// if t is complex (negative)
 	if (discriminant < 0.0f) {
-		false;
+		return false;
 	}
 	
 	float rootDiscriminant = sqrt(discriminant);

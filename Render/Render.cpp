@@ -1,10 +1,23 @@
 #include "Render.h"
 
+Render::Render() 
+{
+}
+
 void Render::startRender(std::vector<LightSources*>& lights,
 	std::vector<Object*>& sceneObjects, 
 	Color* colorBuffer, Camera cam,
 	Options options, glm::vec2* r, glm::vec2* s) {
 
+	// I would construct the AccelStruct grid 
+	// (grid sizing/grid division/populate it etc.) 
+	// before casting rays into the scene
+	
+	// create the grid
+	//sceneGrid = new Grid(sceneObjects, lights);
+
+	// now that my grid is ready, we start casting
+	// rays into the scene and traversing the grid
 	for (int y = 0; y < options.height; y++) {
 		for (int x = 0; x < options.width; x++) {
 			Color pixelColor;
@@ -37,9 +50,17 @@ void Render::startRender(std::vector<LightSources*>& lights,
 					rayOrigin = cam.getCamPos();
 					Ray camRay(rayOrigin, rayDir); // generate cam ray
 
+
+					Object* hitObj = nullptr;
+					float tNear = .0f;
+					int objIndex = .0f;
+					glm::vec2 uv(.0f);
 					// Cast ray into the scene
 					pixelColor = pixelColor + castRay(rayOrigin, rayDir,
 						lights, sceneObjects, options, STARTING_DEPTH, s[l]);
+					
+					/*pixelColor = sceneGrid->intersect(rayOrigin, rayDir,
+						sceneObjects, tNear, objIndex, uv, hitObj) ? Color(1.0f, 1.0f, 1.0f, .0f) : Color(.0f, .0f, .0f, .0f);*/
 				}
 				// average out the color sampled from 
 				// n^2 rays cast each indiv. pixel
@@ -89,33 +110,51 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 	glm::vec2 jitter)
 {
 	Color hitColor = Color();
-	// check whether depth is greater than maxDepth, assign 
-	// black background if so
+	// Stopping Condition: 
+	// check if depth is greater than maxDepth, if yes, 
+	// return no color contribution in this call level
 	if (depth > MAX_RECURSION_DEPTH) {
 		return hitColor = Color(.0f, .0f, .0f, .0f);
 	}
 
 	int objIndex; // stores idx of closest obj in scene list
-	glm::vec2 uv; // check this 
+	glm::vec2 uv; 
 	Object* hitObj = nullptr;
 	float tNear = FLT_MAX;
 
-	// find the closest object intersected 
+	// trace() finds the closest object intersected 
+	// we can use a gridTraversal algorithm here to replace trace()
+	// function. Instead of using the trace() method to find closest 
+	// object intersected in the scene, we will now use our "while(1)"
+	// loop in Grid::intersect() to traverse thru the grid cells, returning
+	// "true" once first (closest) obj intersected. If not, no object 
+	// intersected, return false. 
+	//if (trace(orig, dir, objects, tNear, objIndex, uv, &hitObj)) {
+	//bool firstTime = false;
+	//if (depth == 0) {
+	//	firstTime = sceneGrid->intersect(orig, dir, objects, tNear, objIndex, uv, hitObj);
+	//}
+	//else {
+	//	firstTime = trace(orig, dir, objects, tNear, objIndex, uv, &hitObj);
+	//}
 	if (trace(orig, dir, objects, tNear, objIndex, uv, &hitObj)) {
-
+	//if (firstTime) {
+		// intersection pt & ptr to object has been found
 		glm::vec3 hitPoint = orig + dir * tNear;
 		glm::vec3 N; // normal
 		glm::vec2 st; // for triangle meshes
 		glm::vec3 reflection_dir;
 		glm::vec3 reflection_ray_origin;
-
+		
 		// set floor tiles to be checkered
 		if (hitObj->getColor().getColorSpecial() == 2.0f) {
 			int squareTile = floor(hitPoint.x) + floor(hitPoint.z);
 			if (squareTile % 2 == 0) {
+				//hitObj->setColor(229/255.0f, 48/255.0f, 36/255.0f);
 				hitObj->setColor(0.0f, 0.0f, 0.0f);
 			}
 			else {
+				//hitObj->setColor(235/255.0f, 230/255.0f, 3/255.0f);
 				hitObj->setColor(1.0f, 1.0f, 1.0f);
 			}
 		}
@@ -137,15 +176,17 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 			// inside or outside surface
 			glm::vec3 refract_ray_orig = dot(dir, N) < 0.0f ?
 				hitPoint - N * opts.bias : hitPoint + N * opts.bias;
-			glm::vec3 refract_ray_dir =
-				normalize(refract(dir, N, hitObj->ior));
+			glm::vec3 refract_ray_dir = normalize(refract(dir, N, hitObj->ior));
 			// compute fresnel
 			fresnel(dir, N, hitObj->ior, kr);
 			// Proportion of light transmitted 
 			kt = 1.0f - kr;
 			// if amt of light reflected is less than 100% 
 			if (kr < 1.0f) {
-				// cast refraction ray:
+				// cast refraction ray: 
+				// we multiply transmitted ray color by surface color of 
+				// transmitted object to get the transparent dielectric 
+				// color (effect)
 				hitColor = hitColor + hitObj->getColor() *
 					castRay(refract_ray_orig, refract_ray_dir,
 						sources, objects, opts, ++depth, jitter) * kt;
@@ -154,7 +195,7 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 			// Generate reflection ray: 
 			reflect(dir, N, hitPoint,
 				reflection_ray_origin, reflection_dir, opts);
-			hitColor = hitColor +
+			hitColor = hitColor + hitObj->getColor() *
 				castRay(reflection_ray_origin, reflection_dir,
 					sources, objects, opts, ++depth, jitter) * kr;
 			break;
@@ -243,7 +284,6 @@ bool Render::trace(glm::vec3 orig, glm::vec3 dir,
 	// iterate thru object vector and call intersect on each
 	// object, replace saved values with those of the closest obj 
 	for (int k = 0; k < objects.size(); k++) {
-
 		// findIntersectionwill save tCurrNearest, and pointer to nearest
 		// object
 		if (objects[k]->findIntersection(orig, dir, tCurrNearest, indexK, uvK)
@@ -263,7 +303,7 @@ float Render::clamp(const float& lo, const float& hi, const float& v) {
 }
 
 void Render::fresnel(const glm::vec3& I, glm::vec3& N, float& ior, float& kr) {
-	// get the refraction index and eta 
+	// get the refraction indices and eta 
 	float n1 = 1.0f; float n2 = ior;
 	float cosi = clamp(-1, 1, dot(I, N));
 
@@ -337,8 +377,6 @@ void Render::reflect(glm::vec3 ray_dir, glm::vec3 N,
 		hitPoint + N * opts.bias;
 }
 
-
-
 Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N, 
 	const glm::vec3 hitPoint, Object* hitObj, 
 	const std::vector<LightSources*>& sources, 
@@ -349,7 +387,7 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 	// kd (diffuse color) * I (light intensity) * dot(N, l) +
 	// Ks * I * pow(dot(h, N), phongExponent);
 	Color sumDiffuse = Color(); // initialized to black
-	Color sumSpecular = Color();
+	Color sumSpecular = Color(); // initialized to black
 	glm::vec3 shadowOrigPoint = (dot(dir, N) < 0) ?
 		hitPoint + N * opts.bias :
 		hitPoint - N * opts.bias;
@@ -361,7 +399,7 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 		float light_distance_sq;
 		if (sources[i]->getLightType() == AREA_LIGHT) {
 			// we want to sample at a randomized position on the 
-			// area light =   corner vector (starting pt) +
+			// area light = corner vector (starting pt) +
 			// some dist in a + 
 			// some dist in b
 			light_pos = sources[i]->getLightPos() +
@@ -380,7 +418,7 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 			light_dir = normalize(light_dir);
 		}
 		// trace rays back to lightsource and do intersection tests:
-		// If an object intersected by shadow ray, and the object's is closer
+		// If an object intersected by shadow ray, and the object is closer
 		// to the shadowOrigin than the light, the region will be in shadow
 		glm::vec2 uv;
 		int objIndex;
@@ -403,20 +441,21 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 			sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
 				max(0.0f, dot(N, light_dir)) * ((double)1 - inShadow);
 		}
-		if (hitObj->getMaterialType() != DIFFUSE) {
+		// non-purely diffuse materials have specular/shiny component
+		if (hitObj->getMaterialType() != DIFFUSE) { 
 			// calculate specular contribution
 			glm::vec3 scalar = 2.0f * N * dot(light_dir, N);
 			glm::vec3 reflectionDir = normalize(scalar - light_dir);
 			sumSpecular = sumSpecular + sources[i]->getLightColor() *
-				pow(max(0.0f, dot(reflectionDir, -dir)), 200) *
+				pow(max(0.0f, dot(reflectionDir, -dir)), 50) *
 				((double)1 - inShadow);
 		}
 	}
 
-	// ambient color + diffuse + specular 
-	return hitObj->getColor() * opts.ambientLight +
-		sumDiffuse * hitObj->getColor() *
-		hitObj->kd + sumSpecular * hitObj->ks;
+	// sum up the 3 color components 
+	return hitObj->getColor() * opts.ambientLight + // ambient
+		sumDiffuse * hitObj->getColor() * hitObj->kd + // diffuse
+		sumSpecular * hitObj->ks; // specular 
 }
 void Render::writeImage(std::string fileName, float exposure,
 	float gamma, Color* pixelData, int width, int height) {
@@ -439,4 +478,95 @@ void Render::writeImage(std::string fileName, float exposure,
 	std::cout << imageData.size() << std::endl;
 	std::cout << height << " " << width << std::endl;
 	resultToPNG(fileName, width, height, imageData);
+}
+
+// Pass in an empty light and objects vector, 
+// as well as an integer value to choose a scene.
+// Fills vector w objects & lights for a specified scene. 
+// Objects/shapes and lights taken from "scene.h" file
+// --- Currently there are 4 scenes
+void Render::selectScene(std::vector<Object*>& sceneObjects,
+	std::vector<LightSources*>& lightSources, 
+	int sceneNumber) {
+
+	if (sceneNumber <= 0 || sceneNumber > 4) return;
+	
+	switch (sceneNumber) {
+	case 1: {
+		sceneObjects.push_back(&scene_sphere);
+		sceneObjects.push_back(&scene_sphere2);
+		sceneObjects.push_back(&scene_sphere3);
+		sceneObjects.push_back(&scene_sphere4);
+		sceneObjects.push_back(&scene_sphere5);
+		sceneObjects.push_back(&scene_sphere6);
+		sceneObjects.push_back(&scene_sphere7);
+
+		sceneObjects.push_back(&plane);
+		sceneObjects.push_back(&plane2);
+		sceneObjects.push_back(&plane3);
+		sceneObjects.push_back(&plane4);
+		sceneObjects.push_back(&plane5);
+		sceneObjects.push_back(&plane6);
+
+		sceneObjects.push_back(&rec);
+		sceneObjects.push_back(&box);
+		//sceneObjects.push_back(&box2);
+
+		// Lights
+		//lights.push_back(&theLight);
+		lightSources.push_back(&areaLight);
+		
+		break;
+	}
+	case 2: {
+		sceneObjects.push_back(&scene2_box1);
+		sceneObjects.push_back(&scene2_box2);
+		sceneObjects.push_back(&scene2_box3);
+		sceneObjects.push_back(&scene2_box4);
+		sceneObjects.push_back(&scene2_box5);
+		sceneObjects.push_back(&scene2_plane);
+		//sceneObjects.push_back(&scene2_plane2);
+		//sceneObjects.push_back(&scene2_plane3);
+		//sceneObjects.push_back(&scene2_plane4);
+		//sceneObjects.push_back(&scene2_plane5);
+		//sceneObjects.push_back(&scene2_plane6);
+
+		//sceneObjects.push_back(&scene2_rec);
+		lightSources.push_back(&scene2_areaLight);
+		break;
+	}
+	case 3: {
+		sceneObjects.push_back(&scene3_sphere1);
+		sceneObjects.push_back(&scene3_sphere2);
+		sceneObjects.push_back(&scene3_plane1);
+		sceneObjects.push_back(&scene3_box);
+		//sceneObjects.push_back(&scene3_rec);
+		lightSources.push_back(&scene3_areaLight);
+		break;
+	}
+	case 4: {
+		//sceneObjects.push_back(&scene4_sphere1);
+		//sceneObjects.push_back(&scene4_sphere2);
+		sceneObjects.push_back(&scene4_sphere3);
+		sceneObjects.push_back(&scene4_sphere4);
+		sceneObjects.push_back(&scene4_sphere5);
+		sceneObjects.push_back(&scene4_sphere6);
+		sceneObjects.push_back(&scene4_sphere7);
+		sceneObjects.push_back(&scene4_sphere8);
+		sceneObjects.push_back(&scene4_sphere9);
+		sceneObjects.push_back(&scene4_sphere10);
+		sceneObjects.push_back(&scene4_sphere11);
+		sceneObjects.push_back(&scene4_sphere12);
+		sceneObjects.push_back(&scene4_sphere13);
+		sceneObjects.push_back(&scene4_sphere14);
+		sceneObjects.push_back(&scene4_sphere15);
+
+		sceneObjects.push_back(&scene4_plane1);
+		//sceneObjects.push_back(&scene4_rec);
+		lightSources.push_back(&scene4_areaLight);
+		break;
+	}
+	default:
+		break;
+	}
 }

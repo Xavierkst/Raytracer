@@ -4,6 +4,13 @@ Plane::Plane() {
 	this->normal = glm::vec3(1.0f, 0.0f, 0.0f);
 	this->color = Color(.5f, .5f, .5f, 0);
 	this->center = glm::vec3(.0f);
+	// build routine for bounding box min, max 
+	// Infinite Planes are a special case with x-z directions that stretch
+	// to infinity. We treat them separately by catching for any of the 
+	// X or Z components that are infinite in value, and ignore that object 
+	// during sizing of the Grid (scene bounding box)
+	bbox.minBounds = this->center + glm::vec3(-FLT_MAX, this->center.y, FLT_MAX);
+	bbox.maxBounds = this->center + glm::vec3(FLT_MAX, this->center.y, -FLT_MAX);
 }
 
 Plane::Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor, materialType mat) {
@@ -11,6 +18,14 @@ Plane::Plane(glm::vec3 normal, glm::vec3 planeCenter, Color pColor, materialType
 	this->color = pColor;
 	this->center = planeCenter;
 	this->material = mat;
+
+	// build routine for bounding box min, max 
+	// Infinite Planes are a special case with x-z directions that stretch
+	// to infinity. We treat them separately by catching for any of the 
+	// X or Z components that are infinite in value, and ignore that object 
+	// during sizing of the Grid (scene bounding box)
+	bbox.minBounds = this->center + glm::vec3(-FLT_MAX, this->center.y, FLT_MAX);
+	bbox.maxBounds = this->center + glm::vec3(FLT_MAX, this->center.y, -FLT_MAX);
 }
 
 bool Plane::findIntersection(glm::vec3 orig, glm::vec3 dir, float& tNear, int& index, glm::vec2& uv) const {

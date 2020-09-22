@@ -1,19 +1,58 @@
 #include "Box.h"
 
 Box::Box() {
-    bounds[0] = glm::vec3(.0f);
-    bounds[1] = glm::vec3(.0f);
+    // default white cube
     color = Color(1.0f, 1.0f, 1.0f, .0f);
+    centroid = glm::vec3(.0f);
+
+    float halfLength = 0.25f;
+    // min
+    bounds[0] = centroid + glm::vec3(-halfLength, -halfLength, halfLength);
+    // max
+    bounds[1] = centroid + glm::vec3(halfLength, halfLength, -halfLength);
+    // build routine for bounding box min, max 
+    bbox.minBounds = bounds[0];
+    bbox.maxBounds = bounds[1];
 }
 
-Box::Box(glm::vec3 min, glm::vec3 max, Color c, materialType mat) {
-    bounds[0] = min;
-    bounds[1] = max;
+//Box::Box(glm::vec3 min, glm::vec3 max, Color c, materialType mat) {
+//    bounds[0] = min;
+//    bounds[1] = max;
+//    color = c;
+//    material = mat;
+//    if (mat == REFLECTION) {
+//        ior = FLT_MAX;
+//    }
+//
+//    // build routine for bounding box min, max 
+//    bbox.min = min;
+//    bbox.max = max;
+//}
+
+Box::Box(glm::vec3 centroid, float length, Color c, float refractIdx, materialType mat) {
+    ior = refractIdx;
     color = c;
     material = mat;
-    if (mat == REFLECTION) {
+
+    // Opaque objects have infinite idx of refrac
+    if (mat == REFLECTION ||
+        mat == DIFFUSE_AND_GLOSSY ||
+        mat == DIFFUSE_AND_GLOSSY_AND_REFLECTION) {
         ior = FLT_MAX;
     }
+
+    // length of one side, but we rely on the centroid 
+    // (center of box) for reference value, so halve it
+    float halfLength = length * 0.5f;
+    // set the min and max bounds 
+    // min
+    bounds[0] = centroid + glm::vec3(-halfLength, -halfLength, halfLength);
+    // max
+    bounds[1] = centroid + glm::vec3(halfLength, halfLength, -halfLength);
+
+    // build routine for bounding box min, max 
+    bbox.minBounds = bounds[0];
+    bbox.maxBounds = bounds[1];
 }
 
 bool Box::findIntersection(glm::vec3 orig, glm::vec3 dir, 
@@ -37,12 +76,12 @@ bool Box::findIntersection(glm::vec3 orig, glm::vec3 dir,
 
     float tminy, tmaxy;
     if (inverseDir.y >= .0f) {
-        tminy = (bounds[1].y - orig.y) * inverseDir.y;
-        tmaxy = (bounds[0].y - orig.y) * inverseDir.y;
-    }
-    else {
         tminy = (bounds[0].y - orig.y) * inverseDir.y;
         tmaxy = (bounds[1].y - orig.y) * inverseDir.y;
+    }
+    else {
+        tminy = (bounds[1].y - orig.y) * inverseDir.y;
+        tmaxy = (bounds[0].y - orig.y) * inverseDir.y;
     }
     //float tminx = (bounds[0].x - orig.x) / dir.x;
     //float tmaxx = (bounds[1].x - orig.x) / dir.x;
@@ -103,9 +142,16 @@ bool Box::findIntersection(glm::vec3 orig, glm::vec3 dir,
 
     return true;
 }
-// logic is found here: 
+// Basically the ACTUAL "getNormal()" function: 
+// calculates surface normal and stores it
+// explanation is found here: 
 /* https://blog.johnnovak.net/2016/10/22/
    the-nim-raytracer-project-part-4-calculating-box-normals */
+// P -- intersection Pt 
+// orig -- ray Origin 
+// I -- incoming ray Dir 
+// index -- object idx in array
+// N (output) -- stores calculated surface normal
 // returns the normal of the plane that the ray intersects
 void Box::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig, 
     const glm::vec3& I, const int& index, const glm::vec2& uv, 
@@ -115,21 +161,26 @@ void Box::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig,
     glm::vec3 center((bounds[0].x + bounds[1].x) / 2.0f,
         (bounds[0].y + bounds[1].y) / 2.0f,
         (bounds[0].z + bounds[1].z) / 2.0f);
-    // get distance from center
+    // get vector from center to hit point
     glm::vec3 Pt = P - center;
     // calculate x y and z widths from center
     float dx = fabsf(bounds[0].x - bounds[1].x) / 2.0f;
     float dy = fabsf(bounds[0].y - bounds[1].y) / 2.0f;
     float dz = fabsf(bounds[0].z - bounds[1].z) / 2.0f;
-    float bias = 1.0001f;
+    float bias = 1.001f;
 
     // get ratio between them and return that as the normal: 
     // theres always atleast 1 component in the internal vector that
     // has a value of 1
     // we multiply by bias to nudge the pts eg. ard 9.999994  up to 1.0f
-    N = glm::vec3((int)(Pt.x / dx * bias), 
+    N = normalize(glm::vec3((int)(Pt.x / dx * bias), 
         (int)(Pt.y / dy * bias), 
-        (int)(Pt.z / dz * bias));
+        (int)(Pt.z / dz * bias)));
+
+    // If incoming ray is from inside the obj surface
+    // flip normal "inwards"
+    N = (dot(N, I) > 0.0f) ? -N : N;
+
 }
 
 Color Box::getColor()

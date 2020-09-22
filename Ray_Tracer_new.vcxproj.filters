@@ -9,103 +9,136 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
+    <Filter Include="Grid_Acceleration_Structure">
+      <UniqueIdentifier>{9b0ea4d2-c948-4f09-a24a-0893c6fe228f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="write_image_lib">
+      <UniqueIdentifier>{b529ecbc-e73a-40bd-b5b2-63475e10b861}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shapes_and_globals">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Lights_Color">
+      <UniqueIdentifier>{0f1c0f1c-605b-48df-86b6-f0f07c259654}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{f077b06c-fc98-4f7a-a08b-9ea6b4d91485}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera_Ray">
+      <UniqueIdentifier>{1ee6ac94-d964-4987-8da3-eb7a15a14685}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lodepng.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Grid_Acceleration_Structure\AccelerationStructure.cpp">
+      <Filter>Grid_Acceleration_Structure</Filter>
     </ClCompile>
-    <ClCompile Include="utils.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Grid_Acceleration_Structure\Bbox.cpp">
+      <Filter>Grid_Acceleration_Structure</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Grid_Acceleration_Structure\Grid.cpp">
+      <Filter>Grid_Acceleration_Structure</Filter>
     </ClCompile>
-    <ClCompile Include="Ray.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="write_image_lib\lodepng.cpp">
+      <Filter>write_image_lib</Filter>
     </ClCompile>
-    <ClCompile Include="Color.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="write_image_lib\utils.cpp">
+      <Filter>write_image_lib</Filter>
     </ClCompile>
-    <ClCompile Include="Light.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Shapes_and_globals\Box.cpp">
+      <Filter>Shapes_and_globals</Filter>
     </ClCompile>
-    <ClCompile Include="Sphere.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Shapes_and_globals\Plane.cpp">
+      <Filter>Shapes_and_globals</Filter>
     </ClCompile>
-    <ClCompile Include="Object.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Shapes_and_globals\Rect.cpp">
+      <Filter>Shapes_and_globals</Filter>
     </ClCompile>
-    <ClCompile Include="Plane.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Shapes_and_globals\Sphere.cpp">
+      <Filter>Shapes_and_globals</Filter>
     </ClCompile>
-    <ClCompile Include="LightSources.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Shapes_and_globals\Scene.cpp">
+      <Filter>Shapes_and_globals</Filter>
     </ClCompile>
-    <ClCompile Include="Rect.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Shapes_and_globals\Object.cpp">
+      <Filter>Shapes_and_globals</Filter>
     </ClCompile>
-    <ClCompile Include="Box.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Lights_Color\Color.cpp">
+      <Filter>Lights_Color</Filter>
     </ClCompile>
-    <ClCompile Include="Render.h">
-      <Filter>Header Files</Filter>
+    <ClCompile Include="Camera_Ray\Camera.cpp">
+      <Filter>Camera_Ray</Filter>
     </ClCompile>
-    <ClCompile Include="Render.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Camera_Ray\Ray.cpp">
+      <Filter>Camera_Ray</Filter>
     </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Render\Render.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Lights_Color\Light.cpp">
+      <Filter>Lights_Color</Filter>
+    </ClCompile>
+    <ClCompile Include="Lights_Color\LightSources.cpp">
+      <Filter>Lights_Color</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lodepng.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Ray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Color.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Plane.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LightSources.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Options.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Rect.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Grid_Acceleration_Structure\AccelerationStructure.h">
+      <Filter>Grid_Acceleration_Structure</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Grid_Acceleration_Structure\Bbox.h">
+      <Filter>Grid_Acceleration_Structure</Filter>
     </ClInclude>
-    <ClInclude Include="Box.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Grid_Acceleration_Structure\Grid.h">
+      <Filter>Grid_Acceleration_Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="write_image_lib\lodepng.h">
+      <Filter>write_image_lib</Filter>
+    </ClInclude>
+    <ClInclude Include="write_image_lib\utils.h">
+      <Filter>write_image_lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Box.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Plane.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Rect.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Sphere.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Scene.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Object.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Lights_Color\Color.h">
+      <Filter>Lights_Color</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera_Ray\Camera.h">
+      <Filter>Camera_Ray</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera_Ray\Ray.h">
+      <Filter>Camera_Ray</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Render.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Lights_Color\Light.h">
+      <Filter>Lights_Color</Filter>
+    </ClInclude>
+    <ClInclude Include="Lights_Color\LightSources.h">
+      <Filter>Lights_Color</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

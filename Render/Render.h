@@ -3,21 +3,25 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "utils.h"
-#include "Camera.h"
+#include "../write_image_lib/utils.h"
+#include "../Camera_Ray/Camera.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include "Options.h"
+#include "../Options.h"
 #include "windows.h"
-#include "Object.h"
-#include "LightSources.h"
-#include "Scene.h"
+#include "../Shapes_and_globals/Object.h"
+#include "../Lights_Color/LightSources.h"
+#include "../Grid_Acceleration_Structure/Grid.h"
+#include "../Shapes_and_globals/Scene.h"
 
 class Render {
 
 private:
+	//std::vector<Objects*> sceneObjects;
 
 public:
+	Render();
+	Grid* sceneGrid;
 
 	// The actual rendering function that generates camera and
 	// camera rays to cast into each pixel
@@ -96,5 +100,12 @@ public:
 	void writeImage(std::string fileName, float exposure,
 		float gamma, Color* pixelData, int width, int height);
 
+	// Pass in an empty light and objects vector, 
+	// as well as an integer value to choose a scene.
+	// Fills vector w objects & lights for a specified scene. 
+	// Objects/shapes and lights taken from "scene.h" file
+	void selectScene(std::vector<Object*>& sceneObjects, 
+		std::vector<LightSources*>& lightSources,
+		int sceneNumber);
 };
 #endif
