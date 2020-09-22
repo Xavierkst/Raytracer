@@ -72,9 +72,9 @@ Box box2(boxMid2, 0.5f, mint, 1.05f, DIFFUSE);
 
 // Lights ----------------------------------------------------------
 // Rect geom for lights
-glm::vec3 edge_a(-.5f, .0f, .0f);
-glm::vec3 edge_b(0.f, .0f, -.5f);
-glm::vec3 corner(.1f, 7.9f, -2.0f);
+glm::vec3 edge_a(-.7f, .0f, .0f);
+glm::vec3 edge_b(0.f, .0f, -.7f);
+glm::vec3 corner(.25f, 1.9f, -1.8f);
 // 1 corner and 2 edges
 Rect rec(glm::vec3(corner.x, corner.y + .01f, corner.z),
 	edge_a, edge_b, whiteLight, LIGHT);
@@ -115,7 +115,7 @@ Plane scene2_plane(glm::vec3(.0f, 1.0f, .0f),
 	glm::vec3(1.0f, -1.0f, .0f), floor_white, DIFFUSE);
 // Top
 Plane scene2_plane2(glm::vec3(.0f, -1.0f, .0f),
-	glm::vec3(.0f, corner.y + .2f, .0f), floor_white, DIFFUSE);
+	glm::vec3(.0f, corner.y + .01f, .0f), grey, DIFFUSE);
 // L & R
 Plane scene2_plane3(glm::vec3(1.0f, 0.0f, .0f),
 	glm::vec3(-3.0f, 0.0f, .0f), red, DIFFUSE);

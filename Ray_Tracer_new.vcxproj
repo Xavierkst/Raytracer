@@ -139,16 +139,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Camera_Ray\Camera.cpp" />
+    <ClCompile Include="Camera_Ray\Ray.cpp" />
     <ClCompile Include="Grid_Acceleration_Structure\AccelerationStructure.cpp" />
     <ClCompile Include="Grid_Acceleration_Structure\Bbox.cpp" />
     <ClCompile Include="Grid_Acceleration_Structure\Grid.cpp" />
-    <ClCompile Include="Lights\Light.cpp" />
-    <ClCompile Include="Lights\LightSources.cpp" />
+    <ClCompile Include="Lights_Color\Color.cpp" />
+    <ClCompile Include="Lights_Color\Light.cpp" />
+    <ClCompile Include="Lights_Color\LightSources.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Ray.cpp" />
-    <ClCompile Include="Render.cpp" />
+    <ClCompile Include="Render\Render.cpp" />
     <ClCompile Include="Shapes_and_globals\Box.cpp" />
     <ClCompile Include="Shapes_and_globals\Object.cpp" />
     <ClCompile Include="Shapes_and_globals\Plane.cpp" />
@@ -157,12 +157,15 @@
     <ClCompile Include="Shapes_and_globals\Sphere.cpp" />
     <ClCompile Include="write_image_lib\lodepng.cpp" />
     <ClCompile Include="write_image_lib\utils.cpp" />
+    <ClInclude Include="Camera_Ray\Camera.h" />
+    <ClInclude Include="Camera_Ray\Ray.h" />
     <ClInclude Include="Grid_Acceleration_Structure\AccelerationStructure.h" />
     <ClInclude Include="Grid_Acceleration_Structure\Bbox.h" />
     <ClInclude Include="Grid_Acceleration_Structure\Grid.h" />
-    <ClInclude Include="Lights\Light.h" />
-    <ClInclude Include="Lights\LightSources.h" />
-    <ClInclude Include="Render.h" />
+    <ClInclude Include="Lights_Color\Color.h" />
+    <ClInclude Include="Lights_Color\Light.h" />
+    <ClInclude Include="Lights_Color\LightSources.h" />
+    <ClInclude Include="Render\Render.h" />
     <ClInclude Include="Shapes_and_globals\Box.h" />
     <ClInclude Include="Shapes_and_globals\Object.h" />
     <ClInclude Include="Shapes_and_globals\Plane.h" />
@@ -173,10 +176,7 @@
     <ClInclude Include="write_image_lib\utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Color.h" />
     <ClInclude Include="Options.h" />
-    <ClInclude Include="Ray.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

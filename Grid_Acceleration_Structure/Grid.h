@@ -3,8 +3,8 @@
 
 #include "AccelerationStructure.h"
 #include "Bbox.h"
-#include "../Color.h"
-#include "../Lights/Light.h"
+#include "../Lights_Color/Color.h"
+#include "../Lights_Color/Light.h"
 #include <iostream>
 #include "../Shapes_and_globals/Plane.h"
 

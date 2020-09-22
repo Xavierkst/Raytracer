@@ -2,7 +2,7 @@
 #define _OPTIONS_H_
 
 #include <glm/glm.hpp>
-#include "Color.h"
+#include "Lights_Color/Color.h"
 
 #define MAX_RECURSION_DEPTH 8
 #define STARTING_DEPTH 0
@@ -31,7 +31,7 @@ public:
 	// default constructor
 	Options() {
 		softShadows = true;
-		selectScene = 4;
+		selectScene = 1;
 		sampleNum = 12;
 		width = 1080;
 		height = 720;
@@ -45,13 +45,13 @@ public:
 			255.0f / 255.0f, .0f);
 
 		// Camera
-		cameraPos = glm::vec3(.0f, 0.f, 0.0f);
-		cameraForward = glm::vec3(.0f, -.10f, -1.0f);
+		cameraPos = glm::vec3(.0f, -.2f, 0.0f);
+		cameraForward = glm::vec3(.0f, .0f, -1.0f);
 		cameraReferUp = glm::vec3(.0f, 1.0f, .0f);
 		cameraRight = glm::vec3(1.0f, .0f, .0f);
 
 		//cameraPos = glm::vec3(.0f, 0.f, 0.0f);
-		//cameraForward = glm::vec3(.0f, -.10f, -1.0f);
+		//cameraForward = glm::vec3(.0f, -.10f, -1.0f); 
 	}
 };
 #endif 

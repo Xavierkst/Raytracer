@@ -4,12 +4,12 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../Color.h"
+#include "../Lights_Color/Color.h"
 #include "Sphere.h"
 #include "Plane.h"
 #include "Rect.h"
 #include "Box.h"
-#include "../Lights/Light.h"
+#include "../Lights_Color/Light.h"
 #include <vector>
 
 // Colors --------------------------------------------------------

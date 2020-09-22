@@ -19,21 +19,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Lights">
+    <Filter Include="Lights_Color">
       <UniqueIdentifier>{0f1c0f1c-605b-48df-86b6-f0f07c259654}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{f077b06c-fc98-4f7a-a08b-9ea6b4d91485}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Camera_Ray">
+      <UniqueIdentifier>{1ee6ac94-d964-4987-8da3-eb7a15a14685}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Ray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Color.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Grid_Acceleration_Structure\AccelerationStructure.cpp">
@@ -44,9 +41,6 @@
     </ClCompile>
     <ClCompile Include="Grid_Acceleration_Structure\Grid.cpp">
       <Filter>Grid_Acceleration_Structure</Filter>
-    </ClCompile>
-    <ClCompile Include="Render.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="write_image_lib\lodepng.cpp">
       <Filter>write_image_lib</Filter>
@@ -72,24 +66,27 @@
     <ClCompile Include="Shapes_and_globals\Object.cpp">
       <Filter>Shapes_and_globals</Filter>
     </ClCompile>
-    <ClCompile Include="Lights\Light.cpp">
-      <Filter>Lights</Filter>
+    <ClCompile Include="Lights_Color\Color.cpp">
+      <Filter>Lights_Color</Filter>
     </ClCompile>
-    <ClCompile Include="Lights\LightSources.cpp">
-      <Filter>Lights</Filter>
+    <ClCompile Include="Camera_Ray\Camera.cpp">
+      <Filter>Camera_Ray</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera_Ray\Ray.cpp">
+      <Filter>Camera_Ray</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Render.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Lights_Color\Light.cpp">
+      <Filter>Lights_Color</Filter>
+    </ClCompile>
+    <ClCompile Include="Lights_Color\LightSources.cpp">
+      <Filter>Lights_Color</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Ray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Color.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Options.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Grid_Acceleration_Structure\AccelerationStructure.h">
@@ -125,14 +122,23 @@
     <ClInclude Include="Shapes_and_globals\Object.h">
       <Filter>Shapes_and_globals</Filter>
     </ClInclude>
-    <ClInclude Include="Render.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Lights_Color\Color.h">
+      <Filter>Lights_Color</Filter>
     </ClInclude>
-    <ClInclude Include="Lights\Light.h">
-      <Filter>Lights</Filter>
+    <ClInclude Include="Camera_Ray\Camera.h">
+      <Filter>Camera_Ray</Filter>
     </ClInclude>
-    <ClInclude Include="Lights\LightSources.h">
-      <Filter>Lights</Filter>
+    <ClInclude Include="Camera_Ray\Ray.h">
+      <Filter>Camera_Ray</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\Render.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Lights_Color\Light.h">
+      <Filter>Lights_Color</Filter>
+    </ClInclude>
+    <ClInclude Include="Lights_Color\LightSources.h">
+      <Filter>Lights_Color</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

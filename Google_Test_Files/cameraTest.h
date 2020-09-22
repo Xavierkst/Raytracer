@@ -2,8 +2,8 @@
 
 #include "gtest/gtest.h"
 #include "glm/glm.hpp"
-#include "../Camera.h"
-#include "../Camera.cpp"
+#include "../Camera_Ray/Camera.h"
+#include "../Camera_Ray/Camera.cpp"
 
 class cameraTest : public testing::Test {
 private: 

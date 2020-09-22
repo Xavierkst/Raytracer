@@ -3,7 +3,7 @@
 #define _CRTDBG_MAP_ALLOC //to get more details
 #include <stdlib.h>  
 #include <crtdbg.h>   //for malloc and free
-#include "Render.h"
+#include "Render/Render.h"
 #include "Shapes_and_globals/Scene.h"
 
 //void writeImage(std::string fileName, float exposure,

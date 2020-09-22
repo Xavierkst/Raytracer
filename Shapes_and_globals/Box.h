@@ -1,6 +1,7 @@
 #ifndef _BOX_H_
 #define _BOX_H_
 
+#include "../Lights_Color/Color.h"
 #include "Object.h"
 
 class Box : public Object {
