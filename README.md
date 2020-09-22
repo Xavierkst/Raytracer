@@ -13,14 +13,14 @@ There is no multi-threading in this and so the rendering time is very long witho
 * Acceleration structure: Uniform grid 
 ### L & Center: dielectric spheres, Right: A reflective (mirror) sphere 
 ### Cornell Box: Reflection and refraction
-![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/Cornell_Box_objects.jpg)
-![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/testFile_AA_8_rectangle.jpg)
+![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/Cornell_Box_objects.jpg)
+![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/testFile_AA_8_rectangle.jpg)
 ### 4 Boxes (AABB) transmissive and diffuse surfaces
-![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/4Cubes.jpg)
+![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/4Cubes.jpg)
 ### Show casing reflections, refractions, fresnel effect
-![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/transparency_pic.jpg)
+![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/transparency_pic.jpg)
 ### Mirror/Reflective spheres
-![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/sphereArc.jpg)
+![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/sphereArc.jpg)
 ### Future implementations:  
 * Acceleration Structures (bounding volume hierarchy)
 * Triangle Meshes 
@@ -28,4 +28,4 @@ There is no multi-threading in this and so the rendering time is very long witho
 * Glossy reflections (metal surfaces)
 * Texture maps
 ### Extras
-![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/testFile_2_tinted_again.jpg)
+![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/testFile_2_tinted_again.jpg)
