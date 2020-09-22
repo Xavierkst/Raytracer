@@ -2,7 +2,7 @@
 #define _LIGHT_H_
 
 #include "LightSources.h"
-#include "Color.h"
+#include "../Color.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>

@@ -167,7 +167,7 @@ void Box::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig,
     float dx = fabsf(bounds[0].x - bounds[1].x) / 2.0f;
     float dy = fabsf(bounds[0].y - bounds[1].y) / 2.0f;
     float dz = fabsf(bounds[0].z - bounds[1].z) / 2.0f;
-    float bias = 1.0001f;
+    float bias = 1.001f;
 
     // get ratio between them and return that as the normal: 
     // theres always atleast 1 component in the internal vector that
@@ -177,7 +177,10 @@ void Box::getSurfaceProperties(const glm::vec3& P, const glm::vec3 orig,
         (int)(Pt.y / dy * bias), 
         (int)(Pt.z / dz * bias)));
 
-    N = dot(N, I) > 0.0f ? N : -N;
+    // If incoming ray is from inside the obj surface
+    // flip normal "inwards"
+    N = (dot(N, I) > 0.0f) ? -N : N;
+
 }
 
 Color Box::getColor()

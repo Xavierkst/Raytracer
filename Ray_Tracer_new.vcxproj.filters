@@ -9,28 +9,22 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
+    <Filter Include="Grid_Acceleration_Structure">
+      <UniqueIdentifier>{9b0ea4d2-c948-4f09-a24a-0893c6fe228f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="write_image_lib">
+      <UniqueIdentifier>{b529ecbc-e73a-40bd-b5b2-63475e10b861}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shapes_and_globals">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Camera">
-      <UniqueIdentifier>{62ae6539-7181-4c51-aa69-e4134d3c38e2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Grid_Acceleration_Struct">
-      <UniqueIdentifier>{89ee9ae8-c748-415f-9a5c-91d36e59a479}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Objects/Shapes">
-      <UniqueIdentifier>{41a86a96-20d2-4e8e-a795-9b38434b02ae}</UniqueIdentifier>
+    <Filter Include="Lights">
+      <UniqueIdentifier>{0f1c0f1c-605b-48df-86b6-f0f07c259654}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lodepng.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
@@ -42,97 +36,103 @@
     <ClCompile Include="Color.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Light.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Grid_Acceleration_Structure\AccelerationStructure.cpp">
+      <Filter>Grid_Acceleration_Structure</Filter>
     </ClCompile>
-    <ClCompile Include="Sphere.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Grid_Acceleration_Structure\Bbox.cpp">
+      <Filter>Grid_Acceleration_Structure</Filter>
     </ClCompile>
-    <ClCompile Include="Object.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LightSources.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Rect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Box.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Grid_Acceleration_Structure\Grid.cpp">
+      <Filter>Grid_Acceleration_Structure</Filter>
     </ClCompile>
     <ClCompile Include="Render.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="write_image_lib\lodepng.cpp">
+      <Filter>write_image_lib</Filter>
     </ClCompile>
-    <ClCompile Include="AccelerationStructure.cpp">
-      <Filter>Source Files\Grid_Acceleration_Struct</Filter>
+    <ClCompile Include="write_image_lib\utils.cpp">
+      <Filter>write_image_lib</Filter>
     </ClCompile>
-    <ClCompile Include="Bbox.cpp">
-      <Filter>Source Files\Grid_Acceleration_Struct</Filter>
+    <ClCompile Include="Shapes_and_globals\Box.cpp">
+      <Filter>Shapes_and_globals</Filter>
     </ClCompile>
-    <ClCompile Include="Grid.cpp">
-      <Filter>Source Files\Grid_Acceleration_Struct</Filter>
+    <ClCompile Include="Shapes_and_globals\Plane.cpp">
+      <Filter>Shapes_and_globals</Filter>
     </ClCompile>
-    <ClCompile Include="Plane.cpp">
-      <Filter>Header Files\Objects/Shapes</Filter>
+    <ClCompile Include="Shapes_and_globals\Rect.cpp">
+      <Filter>Shapes_and_globals</Filter>
+    </ClCompile>
+    <ClCompile Include="Shapes_and_globals\Sphere.cpp">
+      <Filter>Shapes_and_globals</Filter>
+    </ClCompile>
+    <ClCompile Include="Shapes_and_globals\Scene.cpp">
+      <Filter>Shapes_and_globals</Filter>
+    </ClCompile>
+    <ClCompile Include="Shapes_and_globals\Object.cpp">
+      <Filter>Shapes_and_globals</Filter>
+    </ClCompile>
+    <ClCompile Include="Lights\Light.cpp">
+      <Filter>Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="Lights\LightSources.cpp">
+      <Filter>Lights</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lodepng.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Ray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LightSources.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Options.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
+    <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid_Acceleration_Structure\AccelerationStructure.h">
+      <Filter>Grid_Acceleration_Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid_Acceleration_Structure\Bbox.h">
+      <Filter>Grid_Acceleration_Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid_Acceleration_Structure\Grid.h">
+      <Filter>Grid_Acceleration_Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="write_image_lib\lodepng.h">
+      <Filter>write_image_lib</Filter>
+    </ClInclude>
+    <ClInclude Include="write_image_lib\utils.h">
+      <Filter>write_image_lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Box.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Plane.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Rect.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Sphere.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Scene.h">
+      <Filter>Shapes_and_globals</Filter>
+    </ClInclude>
+    <ClInclude Include="Shapes_and_globals\Object.h">
+      <Filter>Shapes_and_globals</Filter>
     </ClInclude>
     <ClInclude Include="Render.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AccelerationStructure.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Lights\Light.h">
+      <Filter>Lights</Filter>
     </ClInclude>
-    <ClInclude Include="Bbox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Grid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="Plane.h">
-      <Filter>Header Files\Objects/Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>Header Files\Objects/Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="Box.h">
-      <Filter>Header Files\Objects/Shapes</Filter>
-    </ClInclude>
-    <ClInclude Include="Rect.h">
-      <Filter>Header Files\Objects/Shapes</Filter>
+    <ClInclude Include="Lights\LightSources.h">
+      <Filter>Lights</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

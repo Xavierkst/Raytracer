@@ -3,10 +3,10 @@
 
 #include "AccelerationStructure.h"
 #include "Bbox.h"
-#include "Color.h"
-#include "Light.h"
+#include "../Color.h"
+#include "../Lights/Light.h"
 #include <iostream>
-#include "Plane.h"
+#include "../Shapes_and_globals/Plane.h"
 
 #define NUM_AXES 3 // the total number of axes
 

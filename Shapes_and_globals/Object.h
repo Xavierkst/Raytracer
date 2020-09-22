@@ -1,9 +1,9 @@
 #ifndef _OBJECT_H_
 #define _OBJECT_H_
 
-#include "Ray.h"
-#include "Color.h"
-#include "Bbox.h"
+#include "../Ray.h"
+#include "../Color.h"
+#include "../Grid_Acceleration_Structure/Bbox.h"
 enum materialType {
 	REFLECTION_AND_REFRACTION, 
 	REFLECTION, 

@@ -150,10 +150,12 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 		if (hitObj->getColor().getColorSpecial() == 2.0f) {
 			int squareTile = floor(hitPoint.x) + floor(hitPoint.z);
 			if (squareTile % 2 == 0) {
-				hitObj->setColor(0.0f, 0.0f, 0.0f);
+				hitObj->setColor(229/255.0f, 48/255.0f, 36/255.0f);
+				//hitObj->setColor(0.0f, 0.0f, 0.0f);
 			}
 			else {
-				hitObj->setColor(1.0f, 1.0f, 1.0f);
+				hitObj->setColor(235/255.0f, 230/255.0f, 3/255.0f);
+				//hitObj->setColor(1.0f, 1.0f, 1.0f);
 			}
 		}
 
@@ -181,7 +183,10 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 			kt = 1.0f - kr;
 			// if amt of light reflected is less than 100% 
 			if (kr < 1.0f) {
-				// cast refraction ray:
+				// cast refraction ray: 
+				// we multiply transmitted ray color by surface color of 
+				// transmitted object to get the transparent dielectric 
+				// color (effect)
 				hitColor = hitColor + hitObj->getColor() *
 					castRay(refract_ray_orig, refract_ray_dir,
 						sources, objects, opts, ++depth, jitter) * kt;
@@ -190,7 +195,7 @@ Color Render::castRay(const glm::vec3& orig, const glm::vec3& dir,
 			// Generate reflection ray: 
 			reflect(dir, N, hitPoint,
 				reflection_ray_origin, reflection_dir, opts);
-			hitColor = hitColor +
+			hitColor = hitColor + hitObj->getColor() *
 				castRay(reflection_ray_origin, reflection_dir,
 					sources, objects, opts, ++depth, jitter) * kr;
 			break;
@@ -436,12 +441,13 @@ Color Render::phongShading(const glm::vec3 dir, const glm::vec3 N,
 			sumDiffuse = sumDiffuse + sources[i]->getLightColor() *
 				max(0.0f, dot(N, light_dir)) * ((double)1 - inShadow);
 		}
-		if (hitObj->getMaterialType() != DIFFUSE) { // non diffuse materials have specular
+		// non-purely diffuse materials have specular/shiny component
+		if (hitObj->getMaterialType() != DIFFUSE) { 
 			// calculate specular contribution
 			glm::vec3 scalar = 2.0f * N * dot(light_dir, N);
 			glm::vec3 reflectionDir = normalize(scalar - light_dir);
 			sumSpecular = sumSpecular + sources[i]->getLightColor() *
-				pow(max(0.0f, dot(reflectionDir, -dir)), 200) *
+				pow(max(0.0f, dot(reflectionDir, -dir)), 50) *
 				((double)1 - inShadow);
 		}
 	}
@@ -472,4 +478,95 @@ void Render::writeImage(std::string fileName, float exposure,
 	std::cout << imageData.size() << std::endl;
 	std::cout << height << " " << width << std::endl;
 	resultToPNG(fileName, width, height, imageData);
+}
+
+// Pass in an empty light and objects vector, 
+// as well as an integer value to choose a scene.
+// Fills vector w objects & lights for a specified scene. 
+// Objects/shapes and lights taken from "scene.h" file
+// --- Currently there are 4 scenes
+void Render::selectScene(std::vector<Object*>& sceneObjects,
+	std::vector<LightSources*>& lightSources, 
+	int sceneNumber) {
+
+	if (sceneNumber <= 0 || sceneNumber > 4) return;
+	
+	switch (sceneNumber) {
+	case 1: {
+		sceneObjects.push_back(&scene_sphere);
+		sceneObjects.push_back(&scene_sphere2);
+		sceneObjects.push_back(&scene_sphere3);
+		sceneObjects.push_back(&scene_sphere4);
+		sceneObjects.push_back(&scene_sphere5);
+		sceneObjects.push_back(&scene_sphere6);
+		sceneObjects.push_back(&scene_sphere7);
+
+		sceneObjects.push_back(&plane);
+		sceneObjects.push_back(&plane2);
+		sceneObjects.push_back(&plane3);
+		sceneObjects.push_back(&plane4);
+		sceneObjects.push_back(&plane5);
+		sceneObjects.push_back(&plane6);
+
+		sceneObjects.push_back(&rec);
+		sceneObjects.push_back(&box);
+		//sceneObjects.push_back(&box2);
+
+		// Lights
+		//lights.push_back(&theLight);
+		lightSources.push_back(&areaLight);
+		
+		break;
+	}
+	case 2: {
+		sceneObjects.push_back(&scene2_box1);
+		sceneObjects.push_back(&scene2_box2);
+		sceneObjects.push_back(&scene2_box3);
+		sceneObjects.push_back(&scene2_box4);
+		sceneObjects.push_back(&scene2_box5);
+		sceneObjects.push_back(&scene2_plane);
+		//sceneObjects.push_back(&scene2_plane2);
+		//sceneObjects.push_back(&scene2_plane3);
+		//sceneObjects.push_back(&scene2_plane4);
+		//sceneObjects.push_back(&scene2_plane5);
+		//sceneObjects.push_back(&scene2_plane6);
+
+		//sceneObjects.push_back(&scene2_rec);
+		lightSources.push_back(&scene2_areaLight);
+		break;
+	}
+	case 3: {
+		sceneObjects.push_back(&scene3_sphere1);
+		sceneObjects.push_back(&scene3_sphere2);
+		sceneObjects.push_back(&scene3_plane1);
+		sceneObjects.push_back(&scene3_box);
+		//sceneObjects.push_back(&scene3_rec);
+		lightSources.push_back(&scene3_areaLight);
+		break;
+	}
+	case 4: {
+		//sceneObjects.push_back(&scene4_sphere1);
+		//sceneObjects.push_back(&scene4_sphere2);
+		sceneObjects.push_back(&scene4_sphere3);
+		sceneObjects.push_back(&scene4_sphere4);
+		sceneObjects.push_back(&scene4_sphere5);
+		sceneObjects.push_back(&scene4_sphere6);
+		sceneObjects.push_back(&scene4_sphere7);
+		sceneObjects.push_back(&scene4_sphere8);
+		sceneObjects.push_back(&scene4_sphere9);
+		sceneObjects.push_back(&scene4_sphere10);
+		sceneObjects.push_back(&scene4_sphere11);
+		sceneObjects.push_back(&scene4_sphere12);
+		sceneObjects.push_back(&scene4_sphere13);
+		sceneObjects.push_back(&scene4_sphere14);
+		sceneObjects.push_back(&scene4_sphere15);
+
+		sceneObjects.push_back(&scene4_plane1);
+		//sceneObjects.push_back(&scene4_rec);
+		lightSources.push_back(&scene4_areaLight);
+		break;
+	}
+	default:
+		break;
+	}
 }

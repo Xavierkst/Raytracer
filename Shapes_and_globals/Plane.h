@@ -1,7 +1,7 @@
 #ifndef _PLANE_H_
 #define _PLANE_H_
 
-#include "Color.h"
+#include "../Color.h"
 #include "Object.h"
 
 #include <glm/glm.hpp>

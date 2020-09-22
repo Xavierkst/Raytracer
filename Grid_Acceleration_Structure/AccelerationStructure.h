@@ -2,7 +2,7 @@
 #define _ACCELERATION_STRUCTURE_H_
 
 #include <vector>
-#include "Object.h"
+#include "../Shapes_and_globals/Object.h"
 
 class AccelerationStructure {
 private: 

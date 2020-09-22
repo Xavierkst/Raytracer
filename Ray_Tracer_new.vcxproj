@@ -139,44 +139,44 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AccelerationStructure.cpp" />
-    <ClCompile Include="Bbox.cpp" />
-    <ClCompile Include="Box.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
-    <ClCompile Include="Grid.cpp" />
-    <ClCompile Include="Light.cpp" />
-    <ClCompile Include="LightSources.cpp" />
-    <ClCompile Include="lodepng.cpp" />
+    <ClCompile Include="Grid_Acceleration_Structure\AccelerationStructure.cpp" />
+    <ClCompile Include="Grid_Acceleration_Structure\Bbox.cpp" />
+    <ClCompile Include="Grid_Acceleration_Structure\Grid.cpp" />
+    <ClCompile Include="Lights\Light.cpp" />
+    <ClCompile Include="Lights\LightSources.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Object.cpp" />
-    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Ray.cpp" />
-    <ClCompile Include="Rect.cpp" />
     <ClCompile Include="Render.cpp" />
-    <ClInclude Include="AccelerationStructure.h" />
-    <ClInclude Include="Bbox.h" />
-    <ClInclude Include="Grid.h" />
+    <ClCompile Include="Shapes_and_globals\Box.cpp" />
+    <ClCompile Include="Shapes_and_globals\Object.cpp" />
+    <ClCompile Include="Shapes_and_globals\Plane.cpp" />
+    <ClCompile Include="Shapes_and_globals\Rect.cpp" />
+    <ClCompile Include="Shapes_and_globals\Scene.cpp" />
+    <ClCompile Include="Shapes_and_globals\Sphere.cpp" />
+    <ClCompile Include="write_image_lib\lodepng.cpp" />
+    <ClCompile Include="write_image_lib\utils.cpp" />
+    <ClInclude Include="Grid_Acceleration_Structure\AccelerationStructure.h" />
+    <ClInclude Include="Grid_Acceleration_Structure\Bbox.h" />
+    <ClInclude Include="Grid_Acceleration_Structure\Grid.h" />
+    <ClInclude Include="Lights\Light.h" />
+    <ClInclude Include="Lights\LightSources.h" />
     <ClInclude Include="Render.h" />
-    <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="Sphere.cpp" />
-    <ClCompile Include="utils.cpp" />
+    <ClInclude Include="Shapes_and_globals\Box.h" />
+    <ClInclude Include="Shapes_and_globals\Object.h" />
+    <ClInclude Include="Shapes_and_globals\Plane.h" />
+    <ClInclude Include="Shapes_and_globals\Rect.h" />
+    <ClInclude Include="Shapes_and_globals\Scene.h" />
+    <ClInclude Include="Shapes_and_globals\Sphere.h" />
+    <ClInclude Include="write_image_lib\lodepng.h" />
+    <ClInclude Include="write_image_lib\utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Box.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
-    <ClInclude Include="Light.h" />
-    <ClInclude Include="LightSources.h" />
-    <ClInclude Include="lodepng.h" />
-    <ClInclude Include="Object.h" />
     <ClInclude Include="Options.h" />
-    <ClInclude Include="Plane.h" />
     <ClInclude Include="Ray.h" />
-    <ClInclude Include="Rect.h" />
-    <ClInclude Include="Scene.h" />
-    <ClInclude Include="Sphere.h" />
-    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
