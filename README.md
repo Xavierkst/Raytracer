@@ -1,6 +1,5 @@
 ## Raytracer README
-A basic ray tracer written in C++ that I will continue to develop. I am curious about the process of achieving realism in the animations/games seen today. I wanted to learn how I could build something more than just a bare-bones ray tracer as seen in Peter Shirley's [Ray Tracing In One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html).
-There is no multi-threading in this and so the rendering time is very long without the help of an acceleration structure (Which I'm building at the moment).
+A basic ray tracer written in C++ that I was curious to build myself. Will continue to develop when I have the time. All graphics knowledge obtained from various online sources, but primarily from [scratchapixel](https://www.scratchapixel.com)
 
 ### Features included: 
 * Blinn-Phong shading
