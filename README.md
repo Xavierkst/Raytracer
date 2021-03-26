@@ -1,6 +1,6 @@
-## Raytracer README
+# Raytracer
 
-A basic ray tracer written in C++. Work in progress (when time permits). All graphics knowledge obtained from various online sources, but primarily from [scratchapixel](https://www.scratchapixel.com)
+A basic ray tracer written in C++. Work in progress (when time permits). All graphics knowledge obtained from various online sources such as [scratchapixel](https://www.scratchapixel.com) and [Raytracing In One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 
 ### Features included: 
 
