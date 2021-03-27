@@ -9,14 +9,14 @@ void Render::startRender(std::vector<LightSources*>& lights,
 	Color* colorBuffer, Camera cam,
 	Options options, glm::vec2* r, glm::vec2* s) {
 
-	// I would construct the AccelStruct grid 
-	// (grid sizing/grid division/populate it etc.) 
-	// before casting rays into the scene
+	// Construct the AccelStruct grid 
+	// (grid sizing/division/populate with objects etc.) 
+	// then cast rays into scene
 	
-	// create the grid
+	// create the grid: 
 	//sceneGrid = new Grid(sceneObjects, lights);
 
-	// now that my grid is ready, we start casting
+	// now grid is ready, we start casting
 	// rays into the scene and traversing the grid
 	for (int y = 0; y < options.height; y++) {
 		for (int x = 0; x < options.width; x++) {
@@ -31,13 +31,13 @@ void Render::startRender(std::vector<LightSources*>& lights,
 			// shuffle array s[] -- shirley shuffle method
 			// reduce/eliminates coherence between r[] and s[] float values
 			// for more randomized shadow noise
-			if (options.sampleNum > 1) {
+			if (options.sampleNum > 1) { 
 				shuffleFloatArray(s, options.sampleNum);
 			}
 			float alpha, beta;
 			glm::vec3 rayDir, rayOrigin;
 			// Render with anti-aliasing & soft shadows
-			if (options.softShadows == true) {
+			if (options.softShadows) {
 				for (int l = 0; 
 					l < options.sampleNum * options.sampleNum; ++l) {
 					// Jitter the rays casted into each pixel
@@ -70,7 +70,7 @@ void Render::startRender(std::vector<LightSources*>& lights,
 						(float)(options.sampleNum * options.sampleNum));
 			}
 			// Render w/o anti-aliasing & soft shadows
-			else if (options.softShadows == false) {
+			else if (!options.softShadows) {
 				alpha = ((2 * (x + .5f) / (float)options.width) - 1.0f)
 					* options.aspectRatio * tan(options.fov / 2);
 				beta = (1 - (2 * (y + 0.5) / (float)options.height))
