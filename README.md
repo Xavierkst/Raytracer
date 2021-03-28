@@ -15,6 +15,14 @@ A basic ray tracer written in C++. Work in progress (when time permits). All gra
 
 * Acceleration structure: Uniform grid 
 
+### Future implementations:  
+
+* Acceleration Structures (bounding volume hierarchy)
+* Triangle Meshes 
+* Spherical Lights 
+* Glossy reflections (metal surfaces)
+* Texture maps
+
 ### Cornell Box: Reflection and refraction
 
 ![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/Cornell_Box_objects.jpg)
@@ -29,15 +37,5 @@ A basic ray tracer written in C++. Work in progress (when time permits). All gra
 ![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/transparency_pic.jpg)
 
 ### Mirror/Reflective spheres ![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/sphereArc.jpg) 
-
-### Future implementations:  
-
-* Acceleration Structures (bounding volume hierarchy)
-* Triangle Meshes 
-* Spherical Lights 
-* Glossy reflections (metal surfaces)
-* Texture maps
-
-### Extras
 
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/testFile_2_tinted_again.jpg)
