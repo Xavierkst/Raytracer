@@ -39,3 +39,11 @@ A basic ray tracer written in C++. Work in progress (when time permits). All gra
 ### Mirror/Reflective spheres ![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/sphereArc.jpg) 
 
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/testFile_2_tinted_again.jpg)
+
+### Rendered from another raytracer i wrote with OptiX
+
+![Red Dragon](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/red_dragon.png)
+
+![Room](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/scene6.png)
+
+![Balls on table - Specular](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/scene4-specular.png)
