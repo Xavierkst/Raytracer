@@ -41,7 +41,7 @@ Mirror/Reflective spheres
 
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/testFile_2_tinted_again.jpg)
 
-### Extras from a raytracer I wrote using the Nvidia OptiX (general purpose ray tracing API) 
+### Extras from a raytracer using Nvidia OptiX
 
 ![Red Dragon](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/red_dragon.png)
 
