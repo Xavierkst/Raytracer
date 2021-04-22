@@ -44,7 +44,9 @@ A basic ray tracer written in C++. Work in progress (when time permits). All gra
 
 ![Red Dragon](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/red_dragon.png)
  
-Green dragon | Cornell box 
+Green dragon | Cornell box
+-------------| ------------
 ![Green Dragon Monte Carlo](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/dragon.png) | ![Cornell Box](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/cornell.png)
-- | - 
+-------------| ------------
 ![Room](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/scene6.png) | ![Balls on table - Specular](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/scene4-specular.png)
+
