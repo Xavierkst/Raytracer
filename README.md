@@ -40,9 +40,11 @@ A basic ray tracer written in C++. Work in progress (when time permits). All gra
 
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/testFile_2_tinted_again.jpg)
 
-### Extras from a raytracer I wrote with OptiX (Nvidia's ray tracing API)
+### Extras from a raytracer I wrote using the Nvidia OptiX (general purpose ray tracing API) 
 
 ![Red Dragon](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/red_dragon.png)
+![Green Dragon Monte Carlo](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/dragon.png)
+![Cornell Box](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/cornell.png)
 
 ![Room](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/scene6.png)
 
