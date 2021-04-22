@@ -45,7 +45,8 @@ Mirror/Reflective spheres
 
 ![Red Dragon](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/red_dragon.png)
 
-soft shadows w/ quad lights
+Showcasing soft shadows w/ quad lights
+
 ![Green Dragon Monte Carlo](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/dragon.png)
 
 ![Cornell Box](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/cornell.png)
