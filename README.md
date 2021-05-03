@@ -33,27 +33,23 @@ Axis Aligned Bounding Boxes (AABB) transmissive and diffuse surfaces
 
 ![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/4cubes.jpg)
 
-Mirror/Reflective spheres
-
 ![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/transparency_pic.jpg)
 
 ![Ray traced with Anti-aliasing depth 12](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/sphereArc.jpg) 
 
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/testFile_2_tinted_again.jpg)
 
-### Extras from a raytracer using Nvidia OptiX
+### Extras from another raytracer written with nvidia optiX
 
 ![Red Dragon](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/red_dragon.png)
 
-Showcasing soft shadows w/ quad lights
+Using Next event estimation and Russian roulette (for ray termination)
 
 ![Green Dragon Monte Carlo](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/dragon.png)
 
-![Cornell Box](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/cornell.png)
+![Cornell Box](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/cornellRR.png)
+
+![Cornell Box](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/cornellNEE.png)
 
 ![Sphere quadlights](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/sphere.png)
-
-![Room](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/scene6.png) 
-
-![Balls on table - Specular](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/scene4-specular.png)
 
