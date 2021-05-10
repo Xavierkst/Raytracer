@@ -39,7 +39,7 @@ Axis Aligned Bounding Boxes (AABB) transmissive and diffuse surfaces
 
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/testFile_2_tinted_again.jpg)
 
-### Extras from another raytracer written with nvidia optiX
+### Extra images from another raytracer written with nvidia optiX (in private repo)
 
 ![Red Dragon](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/red_dragon.png)
 
