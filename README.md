@@ -45,11 +45,8 @@ Axis Aligned Bounding Boxes (AABB) transmissive and diffuse surfaces
 
 Using Next event estimation and Russian roulette (for ray termination)
 
-![Green Dragon Monte Carlo](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/dragon.png)
+![Green Dragon](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/dragon2.png)
 
 ![Cornell Box](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/cornellRR.png)
 
-![Cornell Box](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/cornellNEE.png)
-
-![Sphere quadlights](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/sphere.png)
-
+![GGX Materials](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/ggx.png)
