@@ -1,4 +1,5 @@
 # Raytracer
+[Link to a path tracer I wrote using Nvidia OptiX](https://github.com/Xavierkst/pathtracer)
 
 A basic ray tracer written in C++. Work in progress (when time permits). All graphics knowledge obtained from various online sources such as [scratchapixel](https://www.scratchapixel.com) and [Raytracing In One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
 
@@ -39,14 +40,3 @@ Axis Aligned Bounding Boxes (AABB) transmissive and diffuse surfaces
 
 ![Ray traced with Anti-aliasing depth 5](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/testFile_2_tinted_again.jpg)
 
-### Extra images from another raytracer written with nvidia optiX (in private repo)
-
-![Red Dragon](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/red_dragon.png)
-
-Using Next event estimation and Russian roulette (for ray termination)
-
-![Green Dragon](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/dragon2.png)
-
-![Cornell Box](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/cornellRR.png)
-
-![GGX Materials](https://github.com/Xavierkst/Raytracer_build/blob/master/rendered_images/ggx.png)
