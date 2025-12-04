@@ -1,6 +1,10 @@
+*.sln
+*.vcxproj*
+main.cpp
+packages.config
 happytext.txt
+Google_Test_Files/
 .vs/
-testFile.jpg
 testFile_4.jpg
 testFile_floor_bug_why.jpg
 testFile_AA_4_reflect_refract.jpg
